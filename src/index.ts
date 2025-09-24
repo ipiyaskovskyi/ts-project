@@ -1,6 +1,6 @@
 const firstName: string = 'Ihor';
 const birthday: string | Date = new Date('1986-09-12');
-const phoneNumber: string | number = 380501234567;
+const phoneNumber: string | number = 380632168893;
 
 let middleName: string | null = null;
 let extraInfo: string | undefined = undefined;
@@ -30,6 +30,6 @@ function printUserInfo(
 }
 
 printUserInfo(firstName, birthday, phoneNumber);
-printUserInfo(firstName, birthday, phoneNumber, 'VIP user');
+printUserInfo(firstName, birthday, phoneNumber, 'Frontend developer');
 printUserInfo(null, undefined, undefined, extraInfo);
 
