@@ -68,22 +68,21 @@ const deleteTask = (id: number): void => {
     tasksTyped.splice(index, 1);
 }
 
-const toTime = (date?: DateString) => {
-  if (!date) return undefined;
-
+const toTime = (date: DateString) => {
   const timestamp = new Date(date).getTime();
+
   return Number.isNaN(timestamp) ? undefined : timestamp;
 };
 
 const filterTasks = ({ status, priority, createdFrom, createdTo }: TaskFilter): Task[] => {
-  const fromDate = toTime(createdFrom);
-  const toDate = toTime(createdTo);
+  const fromDate = createdFrom ? toTime(createdFrom) : undefined;
+  const toDate = createdTo ? toTime(createdTo) : undefined;
 
   return tasksTyped.filter((t) => {
     if (status && t.status !== status) return false;
     if (priority && t.priority !== priority) return false;
 
-    const createdAtTimestamp = toTime(t.createdAt);
+    const createdAtTimestamp = t.createdAt ? toTime(t.createdAt) : undefined;
 
     if (createdAtTimestamp === undefined) return false;
 
