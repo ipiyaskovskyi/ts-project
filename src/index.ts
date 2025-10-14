@@ -18,7 +18,7 @@ const created = provider.create({
   title: 'Implement login',
   priority: 'high',
   status: 'in_progress',
-  storyPoints: 1,
+  storyPoints: 5,
   description: 'Add OAuth login flow',
   deadline: new Date('2025-12-31'),
 });
@@ -30,7 +30,7 @@ console.log('GetById:', taskById);
 const updated = provider.update({
   id: 2,
   title: 'Implement login (OAuth2 + SSO)',
-  storyPoints: 3,
+  storyPoints: -10,
   priority: 'medium',
 });
 console.log('Updated:', updated);

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { TaskType, TaskId, Priority, Status, DateString } from '../../dto/Task';
+import { TaskType, DateString, TaskFilter } from '../../dto/Task';
 import { DEFAULT_DESCRIPTION, DEFAULT_PRIORITY, DEFAULT_STATUS } from '../../constants';
 
 class TaskService {
@@ -32,6 +32,13 @@ class TaskService {
 
     return tasksSchema.parse(data);
   }
+  
+  private toTime(date?: DateString): number | undefined {
+    if (date === undefined) return undefined;
+    const timestamp = new Date(date).getTime();
+
+    return Number.isNaN(timestamp) ? undefined : timestamp;
+  }
 
   private normalize(task: TaskType): TaskType { 
     const { id, title, description } = task;
@@ -48,21 +55,20 @@ class TaskService {
       return d;
     };
 
+    const storyPoints =
+      typeof task.storyPoints === 'number' && Number.isFinite(task.storyPoints)
+        ? Math.max(0, task.storyPoints)
+        : 0;
+
     const createdAt = coerceToDateString(task.createdAt) ?? new Date().toISOString();
-    const deadline = coerceToDateString(task.deadline);
+    const deadline = coerceToDateString(task.deadline) ?? undefined;
 
-    const toTime = (d?: DateString) => {
-      if (!d) return undefined;
-      const ts = new Date(d).getTime();
-      return Number.isNaN(ts) ? undefined : ts;
-    };
-
-    const createdTs = toTime(createdAt);
+    const createdTs = this.toTime(createdAt);
     if (createdTs === undefined) {
       throw new Error('createdAt must be a valid date');
     }
+    const deadlineTs = this.toTime(deadline);
 
-    const deadlineTs = toTime(deadline);
     if (deadline !== undefined && deadlineTs === undefined) {
       throw new Error('deadline must be a valid date');
     }
@@ -75,14 +81,14 @@ class TaskService {
       title,
       priority: task.priority || DEFAULT_PRIORITY,
       createdAt: new Date(),
-      storyPoints: task.storyPoints || 0,
+      storyPoints,
       status: task.status || DEFAULT_STATUS,
       description: description || DEFAULT_DESCRIPTION,
-      deadline: deadline ? new Date(deadline) : new Date(new Date().getDate() + 7),
+      deadline: deadline ? new Date(deadline) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
     };
   }
 
-  generateId(): TaskId {
+  generateId(): number {
     return this.tasks.length + 1;
   }
 
@@ -94,7 +100,7 @@ class TaskService {
     return [...this.tasks];
   }
 
-  getById(id: TaskId): TaskType | undefined {
+  getById(id: number): TaskType | undefined {
     return this.tasks.find((t) => t.id === id);
   }
 
@@ -120,7 +126,7 @@ class TaskService {
     return normalized;
   }
 
-  delete(id: TaskId): void {
+  delete(id: number): void {
     const index = this.tasks.findIndex((t) => t.id === id);
     if (index === -1) {
       throw new Error('Task not found');
@@ -133,32 +139,23 @@ class TaskService {
     priority,
     createdFrom,
     createdTo,
-  }: {
-    status?: Status;
-    priority?: Priority;
-    createdFrom?: DateString;
-    createdTo?: DateString;
-  }): TaskType[] {
-    const toTime = (date?: DateString) => {
-      if (!date) return undefined;
-      const timestamp = new Date(date).getTime();
-      return Number.isNaN(timestamp) ? undefined : timestamp;
-    };
-
-    const fromDate = toTime(createdFrom);
-    const toDate = toTime(createdTo);
+  }: TaskFilter): TaskType[] {
+    const fromDate = createdFrom ? this.toTime(createdFrom) : undefined;
+    const toDate = createdTo ? this.toTime(createdTo) : undefined;
 
     return this.tasks.filter((t) => {
-      if (status && t.status !== status) return false;
-      if (priority && t.priority !== priority) return false;
+    if (status && t.status !== status) return false;
+    if (priority && t.priority !== priority) return false;
 
-      const createdAtTimestamp = toTime(t.createdAt);
-      if (createdAtTimestamp === undefined) return false;
+    const createdAtTimestamp = t.createdAt ? this.toTime(t.createdAt) : undefined;
 
-      if (fromDate !== undefined && createdAtTimestamp < fromDate) return false;
-      if (toDate !== undefined && createdAtTimestamp > toDate) return false;
-      return true;
-    });
+    if (createdAtTimestamp === undefined) return false;
+
+    if (fromDate !== undefined && createdAtTimestamp < fromDate) return false;
+    if (toDate !== undefined && createdAtTimestamp > toDate) return false;
+    
+    return true;
+  });
   }
 }
 

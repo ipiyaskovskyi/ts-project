@@ -1,5 +1,5 @@
 import TaskService from './task.service';
-import { TaskType, TaskId, Priority, Status, DateString } from '../../dto/Task';
+import { TaskType, TaskFilter } from '../../dto/Task';
 
 class TaskController {
   private service: TaskService;
@@ -12,7 +12,7 @@ class TaskController {
     this.service.load(data);
   }
 
-  generateId(): TaskId {
+  generateId(): number {
     return this.service.generateId();
   }
 
@@ -20,7 +20,7 @@ class TaskController {
     return this.service.getAll();
   }
 
-  getById(id: TaskId): TaskType | undefined {
+  getById(id: number): TaskType | undefined {
     return this.service.getById(id);
   }
 
@@ -32,17 +32,12 @@ class TaskController {
     return this.service.update(task);
   }
 
-  delete(id: TaskId): void {
+  delete(id: number): void {
     this.service.delete(id);
   }
 
-  filter(params: {
-    status?: Status;
-    priority?: Priority;
-    createdFrom?: DateString;
-    createdTo?: DateString;
-  }): TaskType[] {
-    return this.service.filter(params);
+  filter({ status, priority, createdFrom, createdTo }: TaskFilter): TaskType[] {
+    return this.service.filter({ status, priority, createdFrom, createdTo });
   }
 }
 
