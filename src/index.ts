@@ -1,134 +1,97 @@
 import tasks from '../tasks.json';
-import { DEFAULT_DESCRIPTION, DEFAULT_PRIORITY, DEFAULT_STATUS } from './constants';
-import {Task, TaskId, Priority, Status, DateString } from './dto/Task';
-import { z } from 'zod';
+import TaskController from './modules/tasks/task.controller';
+import type { Task as TaskType } from './dto/Task';
+import {
+  Task,
+  Subtask,
+  Bug,
+  Story,
+  Epic,
+} from './modules/tasks/task.types';
 
-const validateTasksJSON = (data: unknown): Task[] => {
-    const schema = z.object({
-        id: z.string().or(z.number()),
-        title: z.string(),
-        priority: z.preprocess(
-            (value) => value === '' ? undefined : value,
-            z.enum(['low', 'medium', 'high']).default(DEFAULT_PRIORITY)
-        ),
-        status: z.preprocess(
-            (value) => value === '' ? undefined : value,
-            z.enum(['todo', 'in_progress', 'done']).default(DEFAULT_STATUS)
-        ),
-        createdAt: z.string().or(z.date()),
-        description: z.string().optional(),
-        deadline: z.string().or(z.date()).optional(),
-    });
-    const tasksSchema = z.array(schema);
+const provider = new TaskController();
 
-    return tasksSchema.parse(data);
-}
+provider.load(tasks);
 
-const tasksTyped: Task[] = validateTasksJSON(tasks);
-
-const getTasksById = (id: TaskId): Task | undefined => {
-    return tasksTyped.find((task) => task.id === id);
-}
-
-const createTask = (task: Task): void => {
-    const { id, title, priority, status, createdAt, description, deadline } = task;
-
-    if (tasksTyped.some((t) => t.id === id)) {
-        throw new Error(`Task with id ${id} already exists`);
-    }
-
-    const newTask: Task = {
-        id,
-        title,
-        priority: priority || DEFAULT_PRIORITY,
-        createdAt: createdAt || new Date().toISOString(),
-        status: status || DEFAULT_STATUS,
-        description: description || DEFAULT_DESCRIPTION,
-        deadline: deadline || new Date().toISOString()
-    };
-
-    tasksTyped.push(newTask);
-}
-
-const updateTask = (task: Task): void =>{
-    const index = tasksTyped.findIndex((t: Task) => t.id === task.id);
-
-    if (index === -1) {
-        throw new Error('Task not found');
-    }
-
-    tasksTyped[index] = { ...tasksTyped[index], ...task };
-}
-
-const deleteTask = (id: TaskId): void => {
-    const index = tasksTyped.findIndex((t: Task) => t.id === id);
-    if (index === -1) {
-        throw new Error('Task not found');
-    }
-    tasksTyped.splice(index, 1);
-}
-
-const filterTasks = (
-    {
-        status,
-        priority,
-        createdFrom,
-        createdTo
-    }: 
-    { 
-        status?: Status; 
-        priority?: Priority;
-        createdFrom?: DateString;
-        createdTo?: DateString
-    }    
-): Task[] => {
-  const toTime = (date?: DateString) => {
-    if (!date) return undefined;
-
-    const timestamp = new Date(date).getTime();
-    return Number.isNaN(timestamp) ? undefined : timestamp;
-  };
-
-  const fromDate = toTime(createdFrom);
-  const toDate = toTime(createdTo);
-
-  return tasksTyped.filter((t) => {
-    if (status && t.status !== status) return false;
-    if (priority && t.priority !== priority) return false;
-
-    const createdAtTimestamp = toTime(t.createdAt);
-
-    if (createdAtTimestamp === undefined) return false;
-
-    if (fromDate !== undefined && createdAtTimestamp < fromDate) return false;
-    if (toDate !== undefined && createdAtTimestamp > toDate) return false;
-    return true;
-  });
-};
-
-getTasksById(2)
-createTask({
-    id: tasksTyped.length + 1,
-    title: 'New Task',
-    priority: 'high',
-    status: 'in_progress',
-    description: 'This is a new task',
-    deadline: new Date('2024-12-31')
-  });
-updateTask({id: 2, title: 'Updated Task', priority: 'low' });
-deleteTask(1);
-
-console.log(tasksTyped);
-
-console.log(filterTasks({ status: 'todo' }));
-console.log(filterTasks({ priority: 'high' }));
-console.log(filterTasks({
-  createdFrom: '2025-09-01T00:00:00.000Z',
-  createdTo: '2025-09-30T23:59:59.999Z',
-}));
-console.log(filterTasks({
-  status: 'in_progress',
+const created = provider.create({
+  id: provider.generateId(),
+  title: 'Implement login',
   priority: 'high',
-  createdFrom: '2025-10-01T00:00:00.000Z',
-  createdTo: '2025-10-31T23:59:59.999Z',
-}));
+  status: 'in_progress',
+  storyPoints: 20,
+  description: 'Add OAuth login flow',
+  deadline: new Date('2025-12-31'),
+});
+console.log('Created:', created);
+
+const taskById = provider.getById(2);
+console.log('GetById:', taskById);
+
+const updated = provider.update({
+  id: 2,
+  title: 'Implement login (OAuth2 + SSO)',
+  priority: 'medium',
+});
+console.log('Updated:', updated);
+
+const filtered = provider.filter({ status: 'in_progress', priority: 'high' });
+console.log('Filtered:', filtered);
+
+provider.delete(2);
+console.log('Deleted:', 'task with id 2');
+
+const task = new Task({
+  id: provider.generateId(),
+  title: 'Base task',
+  priority: 'low',
+  status: 'todo',
+});
+console.log('New task:', task);
+
+const sub = new Subtask({
+  id: provider.generateId(),
+  title: 'Subtask of base',
+  parentId: 1,
+  status: 'in_progress',
+  labels: ['subtask'],
+  assignee: 'John Doe',
+});
+console.log('Subtask:', sub);
+
+const bug = new Bug({
+  id: provider.generateId(),
+  title: 'Fix crash on startup',
+  severity: 'critical',
+  priority: 'high',
+  status: 'in_progress',
+  environment: 'Windows 10',
+  stepsToReproduce: 'Open app',
+});
+console.log('Bug:', bug);
+
+const story = new Story({
+  id: provider.generateId(),
+  title: 'User can manage profile',
+  storyPoints: 8,
+  priority: 'medium',
+  status: 'todo',
+  epicLink: 'Epic 1',
+});
+console.log('Story:', story);
+
+const epic = new Epic({
+  id: provider.generateId(),
+  title: 'Authentication & Authorization',
+  childrenIds: [3, 4],
+  status: 'in_progress',
+  color: 'red',
+});
+console.log('Epic:', epic);
+
+
+console.log('Task info (base):', task.getTaskInfo());
+console.log('Task info (sub):', sub.getTaskInfo());
+console.log('Task info (bug):', bug.getTaskInfo());
+console.log('Task info (story):', story.getTaskInfo());
+console.log('Task info (epic):', epic.getTaskInfo());
+

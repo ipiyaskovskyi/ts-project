@@ -5,6 +5,7 @@
     "description": "Initialize repository and configure TypeScript project.",
     "createdAt": "2025-09-30T18:30:00.000Z",
     "status": "done",
+    "storyPoints": 1,
     "priority": "high",
     "deadline": "2025-09-30T20:00:00.000Z"
   },
@@ -14,6 +15,7 @@
     "description": "Add linting and formatting rules with scripts.",
     "createdAt": "2025-09-30T18:45:00.000Z",
     "status": "in_progress",
+    "storyPoints": 2,
     "priority": "medium",
     "deadline": "2025-10-01T12:00:00.000Z"
   },
@@ -23,6 +25,7 @@
     "description": "Implement function and add nullish coalescing checks.",
     "createdAt": "2025-09-30T19:00:00.000Z",
     "status": "done",
+    "storyPoints": 3,
     "priority": "high",
     "deadline": "2025-09-30T20:30:00.000Z"
   },
@@ -32,6 +35,7 @@
     "description": "Write tests for utility functions and edge cases.",
     "createdAt": "2025-09-30T19:30:00.000Z",
     "status": "todo",
+    "storyPoints": 0,
     "priority": "high",
     "deadline": "2025-10-02T17:00:00.000Z"
   },
@@ -41,6 +45,7 @@
     "description": "Provide a reusable JSON with sample tasks for demos.",
     "createdAt": "2025-09-30T20:00:00.000Z",
     "status": "done",
+    "storyPoints": 0,
     "priority": "low",
     "deadline": "2025-10-01T09:00:00.000Z"
   },
@@ -50,6 +55,7 @@
     "description": "Add npm script for building TS to JS.",
     "createdAt": "2025-09-30T20:10:00.000Z",
     "status": "todo",
+    "storyPoints": 0,
     "priority": "medium",
     "deadline": "2025-10-01T18:00:00.000Z"
   },
@@ -59,6 +65,7 @@
     "description": "Configure GitHub Actions for build and test.",
     "createdAt": "2025-09-30T20:15:00.000Z",
     "status": "",
+    "storyPoints": 0,
     "priority": "",
     "deadline": "2025-10-03T12:00:00.000Z"
   },
@@ -68,6 +75,7 @@
     "description": "Write README with setup instructions and examples.",
     "createdAt": "2025-09-30T20:20:00.000Z",
     "status": "in_progress",
+    "storyPoints": 0,
     "priority": "low",
     "deadline": "2025-10-02T10:00:00.000Z"
   },
@@ -77,6 +85,7 @@
     "description": "Improve runtime guards and logging.",
     "createdAt": "2025-09-30T20:25:00.000Z",
     "status": "todo",
+    "storyPoints": 0,
     "priority": "high",
     "deadline": "2025-10-04T16:00:00.000Z"
   },
@@ -86,6 +95,7 @@
     "description": "Introduce stricter types and utility helpers.",
     "createdAt": "2025-09-30T20:30:00.000Z",
     "status": "todo",
+    "storyPoints": 0,
     "priority": "medium",
     "deadline": "2025-10-05T15:00:00.000Z"
   },
@@ -95,6 +105,7 @@
     "description": "Tag initial release and create changelog.",
     "createdAt": "2025-09-30T20:35:00.000Z",
     "status": "todo",
+    "storyPoints": 0,
     "priority": "high",
     "deadline": "2025-10-06T11:00:00.000Z"
   },
@@ -104,6 +115,7 @@
     "description": "Create small demo that loads tasks.json and renders list.",
     "createdAt": "2025-09-30T20:40:00.000Z",
     "status": "todo",
+    "storyPoints": 0,
     "priority": "low",
     "deadline": "2025-10-07T13:00:00.000Z"
   }
