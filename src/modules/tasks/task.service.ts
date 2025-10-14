@@ -13,7 +13,7 @@ class TaskService {
 
   private validateTasksJSON(data: unknown): TaskType[] {
     const schema = z.object({
-      id: z.string().or(z.number()),
+      id: z.number(),
       title: z.string().min(1, 'Title cannot be empty'),
       priority: z
         .preprocess((value) => (value === '' ? undefined : value), z.enum(['low', 'medium', 'high']).default(DEFAULT_PRIORITY))
