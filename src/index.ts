@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 const validateTasksJSON = (data: unknown): Task[] => {
     const schema = z.object({
-        id: z.string().or(z.number()),
+        id: z.number(),
         title: z.string(),
         priority: z.preprocess(
             (value) => value === '' ? undefined : value,
