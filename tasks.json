@@ -18,7 +18,7 @@
     "deadline": "2025-10-01T12:00:00.000Z"
   },
   {
-    "id": "T-003",
+    "id": 3,
     "title": "Implement printUserInfo",
     "description": "Implement function and add nullish coalescing checks.",
     "createdAt": "2025-09-30T19:00:00.000Z",
@@ -36,7 +36,7 @@
     "deadline": "2025-10-02T17:00:00.000Z"
   },
   {
-    "id": "T-005",
+    "id": 5,
     "title": "Create tasks seed",
     "description": "Provide a reusable JSON with sample tasks for demos.",
     "createdAt": "2025-09-30T20:00:00.000Z",
@@ -63,7 +63,7 @@
     "deadline": "2025-10-03T12:00:00.000Z"
   },
   {
-    "id": "T-008",
+    "id": 8,
     "title": "Docs",
     "description": "Write README with setup instructions and examples.",
     "createdAt": "2025-09-30T20:20:00.000Z",

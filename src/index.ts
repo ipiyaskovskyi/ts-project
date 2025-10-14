@@ -1,6 +1,6 @@
 import tasks from '../tasks.json';
 import { DEFAULT_DESCRIPTION, DEFAULT_PRIORITY, DEFAULT_STATUS } from './constants';
-import {Task, TaskId, Priority, Status, DateString } from './dto/Task';
+import { Task, Priority, Status, DateString, TaskFilter } from './dto/Task';
 import { z } from 'zod';
 
 const validateTasksJSON = (data: unknown): Task[] => {
@@ -26,7 +26,7 @@ const validateTasksJSON = (data: unknown): Task[] => {
 
 const tasksTyped: Task[] = validateTasksJSON(tasks);
 
-const getTasksById = (id: TaskId): Task | undefined => {
+const getTasksById = (id: number): Task | undefined => {
     return tasksTyped.find((task) => task.id === id);
 }
 
@@ -60,7 +60,7 @@ const updateTask = (task: Task): void =>{
     tasksTyped[index] = { ...tasksTyped[index], ...task };
 }
 
-const deleteTask = (id: TaskId): void => {
+const deleteTask = (id: number): void => {
     const index = tasksTyped.findIndex((t: Task) => t.id === id);
     if (index === -1) {
         throw new Error('Task not found');
@@ -68,27 +68,14 @@ const deleteTask = (id: TaskId): void => {
     tasksTyped.splice(index, 1);
 }
 
-const filterTasks = (
-    {
-        status,
-        priority,
-        createdFrom,
-        createdTo
-    }: 
-    { 
-        status?: Status; 
-        priority?: Priority;
-        createdFrom?: DateString;
-        createdTo?: DateString
-    }    
-): Task[] => {
-  const toTime = (date?: DateString) => {
-    if (!date) return undefined;
+const toTime = (date?: DateString) => {
+  if (!date) return undefined;
 
-    const timestamp = new Date(date).getTime();
-    return Number.isNaN(timestamp) ? undefined : timestamp;
-  };
+  const timestamp = new Date(date).getTime();
+  return Number.isNaN(timestamp) ? undefined : timestamp;
+};
 
+const filterTasks = ({ status, priority, createdFrom, createdTo }: TaskFilter): Task[] => {
   const fromDate = toTime(createdFrom);
   const toDate = toTime(createdTo);
 
