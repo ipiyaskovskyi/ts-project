@@ -1,9 +1,11 @@
-export type Status = 'todo' | 'in_progress' | 'done';
+export type Status = 'todo' | 'in-progress' | 'done';
 export type Priority = 'low' | 'medium' | 'high';
 export type TaskKind = 'Task' | 'Subtask' | 'Bug' | 'Story' | 'Epic';
 export type Severity = 'minor' | 'major' | 'critical';
 
 export type DateString = string | Date;
+
+export type TaskId = number;
 
 export type TaskFilter = {
   status?: Status;

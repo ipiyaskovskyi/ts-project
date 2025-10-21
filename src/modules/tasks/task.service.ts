@@ -19,7 +19,7 @@ class TaskService {
         .preprocess((value) => (value === '' ? undefined : value), z.enum(['low', 'medium', 'high']).default(DEFAULT_PRIORITY))
         .optional(),
       status: z
-        .preprocess((value) => (value === '' ? undefined : value), z.enum(['todo', 'in_progress', 'done']).default(DEFAULT_STATUS))
+        .preprocess((value) => (value === '' ? undefined : (value === 'in_progress' ? 'in-progress' : value)), z.enum(['todo', 'in-progress', 'done']).default(DEFAULT_STATUS))
         .optional(),
       storyPoints: z
         .preprocess((value) => (value === '' ? undefined : value), z.number().default(0))
