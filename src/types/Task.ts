@@ -5,8 +5,6 @@ export type Severity = 'minor' | 'major' | 'critical';
 
 export type DateString = string | Date;
 
-export type TaskId = number;
-
 export type TaskFilter = {
   status?: Status;
   priority?: Priority;
@@ -28,7 +26,7 @@ export type TaskType = {
 export type AnyTaskInfo = TaskType & { type: TaskKind };
 
 export type SubtaskType = TaskType & {
-  parentId: TaskId,
+  parentId: number,
   labels: string[],
   assignee?: string,
 }
@@ -45,6 +43,6 @@ export type StoryType = TaskType & {
 }
 
 export type EpicType = TaskType & {
-  childrenIds?: TaskId[],
+  childrenIds?: number[],
   color?: string,
 }

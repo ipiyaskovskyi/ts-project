@@ -1,7 +1,7 @@
 {
   "tasks": [
     {
-      "id": 1,
+      "id": "1",
       "title": "Build script",
       "description": "Add npm script for building TS to JS.",
       "createdAt": "2025-09-30T20:10:00.000Z",
@@ -11,7 +11,7 @@
       "deadline": "2025-10-01"
     },
     {
-      "id": 2,
+      "id": "2",
       "title": "CI setup",
       "description": "Configure GitHub Actions for build and test.",
       "createdAt": "2025-09-30T20:15:00.000Z",
@@ -21,7 +21,7 @@
       "deadline": "2025-10-03T12:00:00.000Z"
     },
     {
-      "id": 3,
+      "id": "3",
       "title": "Docs",
       "description": "Write README with setup instructions and examples.",
       "createdAt": "2025-09-30T20:20:00.000Z",
@@ -31,7 +31,7 @@
       "deadline": "2025-10-02T10:00:00.000Z"
     },
     {
-      "id": 4,
+      "id": "4",
       "title": "Error handling",
       "description": "Improve runtime guards and logging.",
       "createdAt": "2025-09-30T20:25:00.000Z",
@@ -41,7 +41,7 @@
       "deadline": "2025-10-04T16:00:00.000Z"
     },
     {
-      "id": 5,
+      "id": "5",
       "title": "Refactor types",
       "description": "Introduce stricter types and utility helpers.",
       "createdAt": "2025-09-30T20:30:00.000Z",
@@ -51,7 +51,7 @@
       "deadline": "2025-10-05T15:00:00.000Z"
     },
     {
-      "id": 6,
+      "id": "6",
       "title": "Release v0.1.0",
       "description": "Tag initial release and create changelog.",
       "createdAt": "2025-09-30T20:35:00.000Z",
@@ -61,7 +61,7 @@
       "deadline": "2025-10-06T11:00:00.000Z"
     },
     {
-      "id": 1665,
+      "id": "7",
       "title": "Demo App",
       "description": "",
       "status": "todo",
@@ -70,31 +70,13 @@
       "createdAt": "2025-10-20T10:26:21.437Z"
     },
     {
-      "id": 1666,
-      "title": "new",
-      "description": "",
+      "id": "1b30",
+      "title": "test",
+      "description": "fdf",
       "status": "todo",
-      "priority": "high",
-      "deadline": "2025-10-23",
-      "createdAt": "2025-10-20T10:30:19.058Z"
-    },
-    {
-      "id": 1667,
-      "title": "dd",
-      "description": "",
-      "status": "todo",
-      "priority": "medium",
+      "priority": "low",
       "deadline": "2025-10-31",
-      "createdAt": "2025-10-20T10:33:38.728Z"
-    },
-    {
-      "id": "0e6b",
-      "title": "sdsd",
-      "description": "",
-      "status": "todo",
-      "priority": "medium",
-      "deadline": "2025-10-30",
-      "createdAt": "2025-10-20T10:35:50.197Z"
+      "createdAt": "2025-10-30T17:27:59.199Z"
     }
   ]
 }

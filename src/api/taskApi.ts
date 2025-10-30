@@ -1,17 +1,19 @@
-import type { TaskType } from './dto/Task';
+import type { TaskType } from '../types/Task';
 
 const BASE = '/api/tasks';
 
 export async function listTasks(): Promise<TaskType[]> {
   const res = await fetch(BASE);
   const data = await res.json();
-  return (Array.isArray(data) ? data : []).map((t: any) => ({ ...t, id: Number(t.id) })) as TaskType[];
+  return (Array.isArray(data)
+    ? data
+    : []) as TaskType[];
 }
 
 export async function getTask(id: number): Promise<TaskType> {
   const res = await fetch(`${BASE}/${id}`);
   const data = await res.json();
-  return { ...data, id: Number(data.id) } as TaskType;
+  return data as TaskType;
 }
 
 export async function createTask(task: Omit<TaskType, 'id'>): Promise<TaskType> {
@@ -27,7 +29,7 @@ export async function createTask(task: Omit<TaskType, 'id'>): Promise<TaskType> 
     body: JSON.stringify(toSend),
   });
   const data = await res.json();
-  return { ...data, id: Number(data.id) } as TaskType;
+  return data as TaskType;
 }
 
 export async function updateTask(id: number, patch: Partial<TaskType>): Promise<TaskType> {
@@ -43,7 +45,16 @@ export async function updateTask(id: number, patch: Partial<TaskType>): Promise<
 }
 
 export async function deleteTask(id: number): Promise<void> {
-  await fetch(`${BASE}/${id}`, {
+  const url = `${BASE}/${id}`;
+  console.log('DELETE request to:', url);
+  
+  const res = await fetch(url, {
 		method: 'DELETE'
 	});
+  
+  console.log('DELETE response status:', res.status);
+  
+  if (!res.ok) {
+    throw new Error(`Failed to delete task: ${res.status} ${res.statusText}`);
+  }
 }
