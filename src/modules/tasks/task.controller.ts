@@ -1,5 +1,6 @@
 import TaskService from './task.service';
-import { TaskType, TaskFilter } from '../../dto/Task';
+import { TaskFilter } from '../../dto/Task';
+import { TaskType } from '../../dto/models/Task.model';
 
 class TaskController {
   private service: TaskService;

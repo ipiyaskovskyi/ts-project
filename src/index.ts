@@ -1,6 +1,5 @@
 import tasks from '../tasks.json';
 import TaskController from './modules/tasks/task.controller';
-import type { Task as TaskType } from './dto/Task';
 import {
   Task,
   Subtask,

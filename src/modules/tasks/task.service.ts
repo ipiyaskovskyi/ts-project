@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { TaskType, DateString, TaskFilter } from '../../dto/Task';
+import { DateString, TaskFilter, UpdateTaskType } from '../../dto/Task';
 import { DEFAULT_DESCRIPTION, DEFAULT_PRIORITY, DEFAULT_STATUS } from '../../constants';
+import { TaskType } from '../../dto/models/Task.model';
 
 class TaskService {
   private tasks: TaskType[] = [];
@@ -40,38 +41,31 @@ class TaskService {
     return Number.isNaN(timestamp) ? undefined : timestamp;
   }
 
-  private normalize(task: TaskType): TaskType { 
-    const { id, title, description } = task;
+  private validateAndNormalize(task: TaskType): TaskType { 
+    const { id, title, description, createdAt } = task;
     if (title.trim().length === 0) {
       throw new Error('title cannot be empty');
     }
 
-    if (typeof description === 'string' && description.trim().length === 0) {
+    if (description?.trim().length === 0) {
       throw new Error('description cannot be empty string');
     }
-
-    const coerceToDateString = (d?: DateString) => {
-      if (d === '' as any) return undefined;
-      return d;
-    };
 
     const storyPoints =
       typeof task.storyPoints === 'number' && Number.isFinite(task.storyPoints)
         ? Math.max(0, task.storyPoints)
         : 0;
 
-    const createdAt = coerceToDateString(task.createdAt) ?? new Date().toISOString();
-    const deadline = coerceToDateString(task.deadline) ?? undefined;
-
     const createdTs = this.toTime(createdAt);
     if (createdTs === undefined) {
       throw new Error('createdAt must be a valid date');
     }
-    const deadlineTs = this.toTime(deadline);
+    const deadlineTs = this.toTime(task.deadline);
 
-    if (deadline !== undefined && deadlineTs === undefined) {
+    if (task.deadline !== undefined && deadlineTs === undefined) {
       throw new Error('deadline must be a valid date');
     }
+
     if (deadlineTs !== undefined && deadlineTs < createdTs) {
       throw new Error('deadline cannot be before createdAt');
     }
@@ -80,12 +74,22 @@ class TaskService {
       id,
       title,
       priority: task.priority || DEFAULT_PRIORITY,
-      createdAt: new Date(),
+      createdAt,
       storyPoints,
       status: task.status || DEFAULT_STATUS,
       description: description || DEFAULT_DESCRIPTION,
-      deadline: deadline ? new Date(deadline) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+      deadline: task.deadline ? new Date(task.deadline) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
     };
+  }
+
+  private initializeTask(task: TaskType): TaskType {
+    const createdAt = task.createdAt || new Date().toISOString();
+    const taskWithCreatedAt: TaskType = {
+      ...task,
+      createdAt
+    };
+
+    return this.validateAndNormalize(taskWithCreatedAt);
   }
 
   generateId(): number {
@@ -108,20 +112,26 @@ class TaskService {
     if (this.tasks.some((t) => t.id === task.id)) {
       throw new Error(`Task with id ${task.id} already exists`);
     }
-    const newTask = this.normalize(task);
+
+    const newTask = this.initializeTask(task);
     this.tasks.push(newTask);
     return newTask;
   }
 
-  update(task: TaskType): TaskType {
+  update(task: UpdateTaskType): TaskType {
     const index = this.tasks.findIndex((t) => t.id === task.id);
 
     if (index === -1) {
       throw new Error('Task not found');
     }
 
-    const updated: TaskType = { ...this.tasks[index], ...task };
-    const normalized = this.normalize(updated);
+    const existingTask = this.tasks[index];
+    const updated: TaskType = { 
+      ...existingTask, 
+      ...task,
+      createdAt: existingTask.createdAt
+    };
+    const normalized = this.validateAndNormalize(updated);
     this.tasks[index] = normalized;
     return normalized;
   }

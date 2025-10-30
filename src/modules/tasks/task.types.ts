@@ -1,19 +1,18 @@
+import { BugType } from '../../dto/models/Bug.model';
+import { EpicType } from '../../dto/models/Epic.model';
+import { StoryType } from '../../dto/models/Story.model';
+import { SubtaskType } from '../../dto/models/Subtask.model';
+import { TaskType } from '../../dto/models/Task.model';
 import {
-    TaskId,
     Priority,
     Status,
     DateString,
     Severity,
-    AnyTaskInfo,
-    SubtaskType,
-    TaskType,
-    BugType,
-    StoryType,
-    EpicType
+    AnyTaskInfo
 } from '../../dto/Task';
 
 export class Task {
-  id: TaskId;
+  id: number;
   title: string;
   description?: string;
   priority?: Priority;
@@ -46,7 +45,7 @@ export class Task {
 }
 
 export class Subtask extends Task {
-  parentId: TaskId;
+  parentId: number;
   labels?: string[];
   assignee?: string;
 
@@ -115,7 +114,7 @@ export class Story extends Task {
 }
 
 export class Epic extends Task {
-  childrenIds?: TaskId[];
+  childrenIds?: number[];
   color?: string;
 
   constructor(props: EpicType) {
