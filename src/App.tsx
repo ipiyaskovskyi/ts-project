@@ -1,5 +1,5 @@
-import CreateTaskForm from './components/CreateTaskForm';
 import './App.css';
+import { AppRouter } from './router';
 
 function App() {
   return (
@@ -9,7 +9,7 @@ function App() {
         <p>Create and manage your tasks efficiently</p>
       </header>
       <main className="app-main">
-        <CreateTaskForm />
+        <AppRouter />
       </main>
     </div>
   );

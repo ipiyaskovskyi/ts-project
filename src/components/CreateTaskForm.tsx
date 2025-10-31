@@ -6,7 +6,11 @@ import type { TaskType } from '../types/Task';
 import './CreateTaskForm.css';
 
 
-const CreateTaskForm = () => {
+type CreateTaskFormProps = {
+  onSuccess?: () => void;
+};
+
+const CreateTaskForm = ({ onSuccess }: CreateTaskFormProps) => {
   const {
     register,
     handleSubmit,
@@ -29,6 +33,7 @@ const CreateTaskForm = () => {
 
       await createTask(taskData);
       reset();
+      if (onSuccess) onSuccess();
     } catch (error) {
       console.error('Error creating task:', error);
       alert('Failed to create task. Please try again.');
