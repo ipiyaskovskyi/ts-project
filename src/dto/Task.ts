@@ -1,11 +1,7 @@
-import { TaskType } from "./models/Task.model";
+import { TaskType, Status, Priority, DateString, TaskKind } from "./models/Task.model";
+import { Severity } from "./models/Bug.model";
 
-export type Status = 'todo' | 'in_progress' | 'done';
-export type Priority = 'low' | 'medium' | 'high';
-export type TaskKind = 'Task' | 'Subtask' | 'Bug' | 'Story' | 'Epic';
-export type Severity = 'minor' | 'major' | 'critical';
-
-export type DateString = string | Date;
+export { TaskKind, Status, Priority, DateString };
 
 export type TaskFilter = {
   status?: Status;

@@ -51,9 +51,8 @@ class TaskService {
       throw new Error('description cannot be empty string');
     }
 
-    const storyPoints =
-      typeof task.storyPoints === 'number' && Number.isFinite(task.storyPoints)
-        ? Math.max(0, task.storyPoints)
+    const storyPoints = Number.isFinite(task?.storyPoints || 0)
+        ? Math.max(0, task?.storyPoints || 0)
         : 0;
 
     const createdTs = this.toTime(createdAt);
@@ -129,7 +128,6 @@ class TaskService {
     const updated: TaskType = { 
       ...existingTask, 
       ...task,
-      createdAt: existingTask.createdAt
     };
     const normalized = this.validateAndNormalize(updated);
     this.tasks[index] = normalized;

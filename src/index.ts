@@ -1,12 +1,10 @@
 import tasks from '../tasks.json';
 import TaskController from './modules/tasks/task.controller';
-import {
-  Task,
-  Subtask,
-  Bug,
-  Story,
-  Epic,
-} from './modules/tasks/task.types';
+import { Task } from './dto/models/Task.model';
+import { Subtask } from './dto/models/Subtask.model';
+import { Bug } from './dto/models/Bug.model';
+import { Story } from './dto/models/Story.model';
+import { Epic } from './dto/models/Epic.model';
 
 const provider = new TaskController();
 
