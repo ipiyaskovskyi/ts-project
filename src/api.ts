@@ -4,14 +4,14 @@ const BASE = '/api/tasks';
 
 export async function listTasks(): Promise<TaskType[]> {
   const res = await fetch(BASE);
-  const data = await res.json();
-  return (Array.isArray(data) ? data : []).map((t: any) => ({ ...t, id: Number(t.id) })) as TaskType[];
+
+  return res.json();
 }
 
 export async function getTask(id: number): Promise<TaskType> {
   const res = await fetch(`${BASE}/${id}`);
-  const data = await res.json();
-  return { ...data, id: Number(data.id) } as TaskType;
+
+  return res.json();
 }
 
 export async function createTask(task: Omit<TaskType, 'id'>): Promise<TaskType> {
