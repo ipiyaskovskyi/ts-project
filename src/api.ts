@@ -32,7 +32,7 @@ export async function createTask(task: Omit<TaskType, 'id'>): Promise<TaskType> 
 
 export async function updateTask(id: number, patch: Partial<TaskType>): Promise<TaskType> {
   const res = await fetch(`${BASE}/${id}`, {
-    method: 'PATCH',
+    method: 'PUT',
     headers: {
 			'Content-Type': 'application/json'
 		},
