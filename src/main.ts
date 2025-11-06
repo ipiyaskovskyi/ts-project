@@ -236,7 +236,6 @@ function ensureEditModal() {
   editModalEl = tpl.firstElementChild as HTMLElement;
   document.body.appendChild(editModalEl);
 
-  // initialize bootstrap modal instance lazily on show
   const modalEl = document.getElementById('editTaskModal')!;
   editModalInstance = window.bootstrap ? new window.bootstrap.Modal(modalEl) : null;
 
