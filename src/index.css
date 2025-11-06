@@ -1,0 +1,77 @@
+:root {
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f4f5f7;
+  --color-bg-tertiary: #ebecf0;
+
+  --color-text-primary: #172b4d;
+  --color-text-secondary: #5e6c84;
+  --color-text-tertiary: #97a0af;
+
+  --color-border: #dfe1e6;
+  --color-border-hover: #c1c7d0;
+
+  --color-status-draft: #97a0af;
+  --color-status-in-progress: #0052cc;
+  --color-status-editing: #ffab00;
+  --color-status-done: #36b37e;
+
+  --shadow-sm: 0 1px 1px rgba(9, 30, 66, 0.15);
+  --shadow-md: 0 4px 8px rgba(9, 30, 66, 0.2);
+  --shadow-lg: 0 8px 16px rgba(9, 30, 66, 0.25);
+
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 0.75rem;
+  --spacing-lg: 1rem;
+  --spacing-xl: 1.5rem;
+
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 250ms ease-in-out;
+  --transition-slow: 350ms ease-in-out;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+
+.gap-sm { gap: var(--spacing-sm); }
+.gap-md { gap: var(--spacing-md); }
+.gap-lg { gap: var(--spacing-lg); }
