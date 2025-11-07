@@ -1,17 +1,19 @@
-import type { TaskType } from './dto/Task';
+import type { TaskId, TaskType } from './dto/Task';
 
 const BASE = '/api/tasks';
 
 export async function listTasks(): Promise<TaskType[]> {
   const res = await fetch(BASE);
 
-  return res.json();
+  const data: TaskType[] = await res.json();
+  return data;
 }
 
-export async function getTask(id: number): Promise<TaskType> {
+export async function getTask(id: TaskId): Promise<TaskType> {
   const res = await fetch(`${BASE}/${id}`);
 
-  return res.json();
+  const data: TaskType = await res.json();
+  return data;
 }
 
 export async function createTask(task: Omit<TaskType, 'id'>): Promise<TaskType> {
@@ -26,11 +28,11 @@ export async function createTask(task: Omit<TaskType, 'id'>): Promise<TaskType> 
 		},
     body: JSON.stringify(toSend),
   });
-  const data = await res.json();
-  return { ...data, id: Number(data.id) } as TaskType;
+  const data: TaskType = await res.json();
+  return data;
 }
 
-export async function updateTask(id: number, patch: Partial<TaskType>): Promise<TaskType> {
+export async function updateTask(id: TaskId, patch: Partial<TaskType>): Promise<TaskType> {
   const res = await fetch(`${BASE}/${id}`, {
     method: 'PATCH',
     headers: {
@@ -39,10 +41,11 @@ export async function updateTask(id: number, patch: Partial<TaskType>): Promise<
     body: JSON.stringify(patch),
   });
 
-  return res.json();
+  const data: TaskType = await res.json();
+  return data;
 }
 
-export async function deleteTask(id: number): Promise<void> {
+export async function deleteTask(id: TaskId): Promise<void> {
   await fetch(`${BASE}/${id}`, {
 		method: 'DELETE'
 	});

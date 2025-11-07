@@ -1,5 +1,5 @@
 import { createTask, deleteTask, listTasks, updateTask } from "./api";
-import type { Priority, Status, TaskType, DateString } from "./dto/Task";
+import type { Priority, Status, TaskType, DateString, TaskId } from "./dto/Task";
 
 function formatDate(date?: DateString) {
   if (!date) return '';
@@ -25,10 +25,6 @@ function formatDeadline(date?: DateString) {
   const minutes = pad(d.getMinutes());
   const seconds = pad(d.getSeconds());
   return `${day}/${month}/${year}, ${hours}:${minutes}:${seconds}`;
-}
-
-async function fetchTasks(): Promise<TaskType[]> {
-  return await listTasks();
 }
 
 function createDeleteHandler(task: TaskType, container: HTMLElement) {
@@ -105,7 +101,7 @@ async function renderTasks(container: HTMLElement) {
   
   let tasks: TaskType[] = [];
   try {
-    tasks = await fetchTasks();
+    tasks = await listTasks();
   } catch (e) {
     container.innerHTML = `<div class="alert alert-danger">Error loading tasks: ${String(e)}</div>`;
     return;
@@ -131,15 +127,43 @@ async function renderTasks(container: HTMLElement) {
 let editModalInstance: any = null;
 let editModalEl: HTMLElement | null = null;
 
-function validateTaskData(data: Record<string, FormDataEntryValue>): string | null {
-  const title = (data.title as string || '').trim();
-  if (!title) {
+type TaskFormValues = {
+  id?: TaskId;
+  title: string;
+  description: string;
+  status?: Status;
+  priority?: Priority;
+  deadline?: string;
+};
+
+function normalizeTaskFormData(formData: FormData): TaskFormValues {
+  const getStringValue = (name: string) => {
+    const value = formData.get(name);
+    return typeof value === 'string' ? value : '';
+  };
+
+  const idValue = getStringValue('id').trim();
+  const statusValue = getStringValue('status').trim();
+  const priorityValue = getStringValue('priority').trim();
+  const deadlineValue = getStringValue('deadline').trim();
+
+  return {
+    id: idValue ? (idValue as TaskId) : undefined,
+    title: getStringValue('title').trim(),
+    description: getStringValue('description').trim(),
+    status: statusValue ? (statusValue as Status) : undefined,
+    priority: priorityValue ? (priorityValue as Priority) : undefined,
+    deadline: deadlineValue || undefined,
+  };
+}
+
+function validateTaskData(data: TaskFormValues): string | null {
+  if (!data.title) {
     return 'Title is required';
   }
 
-  const deadline = (data.deadline as string) || undefined;
-  if (deadline) {
-    const deadlineDate = new Date(deadline);
+  if (data.deadline) {
+    const deadlineDate = new Date(data.deadline);
     const now = new Date();
     now.setHours(0, 0, 0, 0);
     if (deadlineDate < now) {
@@ -154,22 +178,25 @@ async function handleEditTaskSubmit(ev: SubmitEvent) {
   ev.preventDefault();
   const form = ev.target as HTMLFormElement;
   const formData = new FormData(form);
-  const data = Object.fromEntries(formData);
-  
-  const validationError = validateTaskData(data);
+  const values = normalizeTaskFormData(formData);
+
+  const validationError = validateTaskData(values);
   if (validationError) {
     alert(validationError);
     return;
   }
 
-  const id = Number(data.id);
-  const title = (data.title as string || '').trim();
+  const { id, title, description, status, priority, deadline } = values;
+  if (!id) {
+    alert('Task id is missing');
+    return;
+  }
   const patch: Partial<TaskType> = {
     title,
-    description: (data.description as string || '').trim(),
-    status: (data.status as string) as TaskType['status'],
-    priority: (data.priority as string) as TaskType['priority'],
-    deadline: (data.deadline as string) || undefined,
+    description,
+    status,
+    priority,
+    deadline,
   };
   try {
     await updateTask(id, patch);
@@ -267,21 +294,21 @@ async function handleCreateTaskSubmit(ev: SubmitEvent, container: HTMLElement) {
   ev.preventDefault();
   const form = ev.target as HTMLFormElement;
   const formData = new FormData(form);
-  const data = Object.fromEntries(formData);
-  
-  const validationError = validateTaskData(data);
+  const values = normalizeTaskFormData(formData);
+
+  const validationError = validateTaskData(values);
   if (validationError) {
     alert(validationError);
     return;
   }
 
-  const title = (data.title as string || '').trim();
-  const description = (data.description as string || '').trim();
-  const status = (data.status as string) as Status;
-  const priority = (data.priority as string) as Priority;
-  const deadline = (data.deadline as string) || undefined;
-
-  const newTask: Omit<TaskType, 'id'> = { title, description, status, priority, deadline };
+  const newTask: Omit<TaskType, 'id'> = {
+    title: values.title,
+    description: values.description,
+    status: values.status ?? 'todo',
+    priority: values.priority ?? 'medium',
+    deadline: values.deadline,
+  };
   try {
     await createTask(newTask);
     form.reset();

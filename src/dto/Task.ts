@@ -1,21 +1,11 @@
 export type Status = 'todo' | 'in-progress' | 'done';
 export type Priority = 'low' | 'medium' | 'high';
-export type TaskKind = 'Task' | 'Subtask' | 'Bug' | 'Story' | 'Epic';
-export type Severity = 'minor' | 'major' | 'critical';
-
 export type DateString = string | Date;
 
-export type TaskId = number;
-
-export type TaskFilter = {
-  status?: Status;
-  priority?: Priority;
-  createdFrom?: DateString;
-  createdTo?: DateString;
-}
+export type TaskId = string;
 
 export type TaskType = {
-  readonly id: number,
+  readonly id: TaskId,
   title: string,
   createdAt?: DateString,
   status?: Status,
@@ -23,28 +13,4 @@ export type TaskType = {
   description?: string,
   priority?: Priority,
   deadline?: DateString,
-}
-
-export type AnyTaskInfo = TaskType & { type: TaskKind };
-
-export type SubtaskType = TaskType & {
-  parentId: TaskId,
-  labels: string[],
-  assignee?: string,
-}
-
-export type BugType = TaskType & {
-  severity: Severity,
-  environment: string,
-  stepsToReproduce: string,
-}
-
-export type StoryType = TaskType & {
-  storyPoints: number,
-  epicLink?: string,
-}
-
-export type EpicType = TaskType & {
-  childrenIds?: TaskId[],
-  color?: string,
 }
