@@ -1,42 +1,28 @@
 {
   "name": "ts-project",
   "version": "1.0.0",
-  "description": "",
-  "homepage": "https://github.com/ipiyaskovskyi/ts-project#readme",
-  "bugs": {
-    "url": "https://github.com/ipiyaskovskyi/ts-project/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ipiyaskovskyi/ts-project.git"
-  },
-  "license": "ISC",
-  "author": "",
-  "type": "module",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "api": "tsx src/server.ts",
-    "test": "NODE_ENV=test jest"
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "clean": "npm run clean --workspaces",
+    "prepare": "husky install"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.5",
-    "@types/jest": "^30.0.0",
-    "@types/node": "^24.10.0",
-    "@types/supertest": "^6.0.3",
-    "jest": "^30.2.0",
-    "supertest": "^7.1.4",
-    "ts-jest": "^29.4.5",
-    "tsx": "^4.20.6",
-    "typescript": "~5.9.3",
-    "vite": "^7.1.7"
+    "husky": "^9.1.5",
+    "lint-staged": "^15.2.7"
   },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "sequelize": "^6.37.7",
-    "sqlite3": "^5.1.7"
+  "lint-staged": {
+    "backend/**/*.{ts,tsx,js,jsx}": [
+      "cd backend && npm run lint:staged --"
+    ],
+    "frontend/**/*.{ts,tsx,js,jsx}": [
+      "cd frontend && npm run lint:staged --"
+    ]
   }
 }

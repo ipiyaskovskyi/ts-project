@@ -1,10 +1,10 @@
+import { existsSync, unlinkSync } from 'node:fs';
+import path from 'node:path';
 import request from 'supertest';
 import { app } from '../src/server.js';
 import { sequelize, Task, User } from '../src/models/index.js';
-import { unlinkSync } from 'fs';
-import { existsSync } from 'fs';
 
-const TEST_DB_PATH = './test.db';
+const TEST_DB_PATH = path.resolve(process.cwd(), 'backend', 'test.sqlite');
 
 async function cleanupDatabase() {
   try {
