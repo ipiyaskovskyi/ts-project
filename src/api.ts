@@ -2,6 +2,9 @@ import type { TaskId, TaskType } from './dto/Task';
 
 const BASE = '/api/tasks';
 
+export type TaskCreatePayload = Omit<TaskType, 'id'>;
+export type TaskUpdatePayload = Partial<Omit<TaskType, 'id'>>;
+
 export async function listTasks(): Promise<TaskType[]> {
   const res = await fetch(BASE);
 
@@ -16,11 +19,11 @@ export async function getTask(id: TaskId): Promise<TaskType> {
   return data;
 }
 
-export async function createTask(task: Omit<TaskType, 'id'>): Promise<TaskType> {
+export async function createTask(task: TaskCreatePayload): Promise<TaskType> {
   const toSend = {
-		...task,
-		createdAt: new Date().toISOString()
-	};
+    ...task,
+    createdAt: new Date().toISOString(),
+  };
   const res = await fetch(BASE, {
     method: 'POST',
     headers: {
@@ -32,12 +35,12 @@ export async function createTask(task: Omit<TaskType, 'id'>): Promise<TaskType> 
   return data;
 }
 
-export async function updateTask(id: TaskId, patch: Partial<TaskType>): Promise<TaskType> {
+export async function updateTask(id: TaskId, patch: TaskUpdatePayload): Promise<TaskType> {
   const res = await fetch(`${BASE}/${id}`, {
     method: 'PATCH',
     headers: {
-			'Content-Type': 'application/json'
-		},
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(patch),
   });
 

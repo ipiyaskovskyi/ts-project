@@ -1,4 +1,4 @@
-import { createTask, deleteTask, listTasks, updateTask } from "./api";
+import { createTask, deleteTask, listTasks, updateTask, type TaskUpdatePayload, type TaskCreatePayload } from "./api";
 import type { Priority, Status, TaskType, DateString, TaskId } from "./dto/Task";
 
 function formatDate(date?: DateString) {
@@ -40,9 +40,12 @@ function createDeleteHandler(task: TaskType, container: HTMLElement) {
   };
 }
 
-function createTaskCard(task: TaskType, container: HTMLElement): HTMLElement {
+function createTaskCard(task: TaskType): HTMLElement {
   const card = document.createElement('div');
   card.className = 'card shadow-sm';
+  if (task.id != null) {
+    card.dataset.taskId = String(task.id);
+  }
 
   const body = document.createElement('div');
   body.className = 'card-body';
@@ -74,13 +77,19 @@ function createTaskCard(task: TaskType, container: HTMLElement): HTMLElement {
   editBtn.type = 'button';
   editBtn.className = 'btn btn-sm btn-outline-primary';
   editBtn.textContent = 'Edit';
-  editBtn.addEventListener('click', () => openEditModal(task));
+  if (task.id != null) {
+    editBtn.dataset.action = 'edit';
+    editBtn.dataset.taskId = String(task.id);
+  }
 
   const delBtn = document.createElement('button');
   delBtn.type = 'button';
   delBtn.className = 'btn btn-sm btn-outline-danger';
   delBtn.textContent = 'Delete';
-  delBtn.addEventListener('click', createDeleteHandler(task, container));
+  if (task.id != null) {
+    delBtn.dataset.action = 'delete';
+    delBtn.dataset.taskId = String(task.id);
+  }
 
   actions.appendChild(editBtn);
   actions.appendChild(delBtn);
@@ -112,11 +121,15 @@ async function renderTasks(container: HTMLElement) {
     return;
   }
 
+  taskCache.clear();
   const list = document.createElement('div');
   list.className = 'd-flex flex-column gap-3';
 
   for (const task of tasks) {
-    const card = createTaskCard(task, container);
+    if (task.id != null) {
+      taskCache.set(String(task.id), task);
+    }
+    const card = createTaskCard(task);
     list.appendChild(card);
   }
 
@@ -124,15 +137,15 @@ async function renderTasks(container: HTMLElement) {
   container.appendChild(list);
 }
 
-let editModalInstance: any = null;
+let tasksContainerEl: HTMLElement | null = null;
+type ModalInstance = { show(): void; hide(): void };
+let editModalInstance: ModalInstance | null = null;
 let editModalEl: HTMLElement | null = null;
+let editTaskFormEl: HTMLFormElement | null = null;
+const taskCache = new Map<string, TaskType>();
 
-type TaskFormValues = {
+type TaskFormValues = Omit<TaskType, 'createdAt' | 'deadline' | 'id'> & {
   id?: TaskId;
-  title: string;
-  description: string;
-  status?: Status;
-  priority?: Priority;
   deadline?: string;
 };
 
@@ -191,7 +204,7 @@ async function handleEditTaskSubmit(ev: SubmitEvent) {
     alert('Task id is missing');
     return;
   }
-  const patch: Partial<TaskType> = {
+  const patch: TaskUpdatePayload = {
     title,
     description,
     status,
@@ -200,11 +213,39 @@ async function handleEditTaskSubmit(ev: SubmitEvent) {
   };
   try {
     await updateTask(id, patch);
-    editModalInstance.hide();
-    const container = document.getElementById('tasks')!;
-    await renderTasks(container);
+    editModalInstance?.hide();
+    const container =
+      tasksContainerEl ?? (document.getElementById('tasks') as HTMLElement | null);
+    if (container) {
+      tasksContainerEl = container;
+      await renderTasks(container);
+    }
   } catch (e) {
     alert('Update error: ' + String(e));
+  }
+}
+
+function handleTasksContainerClick(ev: MouseEvent) {
+  const target = ev.target as HTMLElement | null;
+  if (!target) return;
+  const button = target.closest('button[data-action][data-task-id]') as HTMLButtonElement | null;
+  if (!button) return;
+  const { action, taskId } = button.dataset;
+  if (!action || !taskId) return;
+
+  const task = taskCache.get(taskId);
+  if (!task) return;
+
+  const container =
+    tasksContainerEl ?? (document.getElementById('tasks') as HTMLElement | null);
+  if (!container) return;
+  tasksContainerEl = container;
+
+  if (action === 'edit') {
+    openEditModal(task);
+  } else if (action === 'delete') {
+    const handler = createDeleteHandler(task, container);
+    void handler();
   }
 }
 
@@ -263,18 +304,20 @@ function ensureEditModal() {
   editModalEl = tpl.firstElementChild as HTMLElement;
   document.body.appendChild(editModalEl);
 
-  const modalEl = document.getElementById('editTaskModal')!;
+  const modalEl = editModalEl;
   editModalInstance = window.bootstrap ? new window.bootstrap.Modal(modalEl) : null;
 
-  const editForm = document.getElementById('edit-task-form') as HTMLFormElement;
-  editForm.addEventListener('submit', handleEditTaskSubmit);
+  editTaskFormEl = modalEl.querySelector('#edit-task-form') as HTMLFormElement;
+  editTaskFormEl.addEventListener('submit', handleEditTaskSubmit);
 
   return editModalEl;
 }
 
 function openEditModal(task: TaskType) {
   const modalEl = ensureEditModal();
-  const form = modalEl.querySelector('#edit-task-form') as HTMLFormElement;
+  const form =
+    editTaskFormEl ?? (modalEl.querySelector('#edit-task-form') as HTMLFormElement);
+  editTaskFormEl = form;
   (form.elements.namedItem('id') as HTMLInputElement).value = String(task.id || '');
   (form.elements.namedItem('title') as HTMLInputElement).value = task.title || '';
   (form.elements.namedItem('description') as HTMLTextAreaElement).value = task.description || '';
@@ -282,11 +325,10 @@ function openEditModal(task: TaskType) {
   (form.elements.namedItem('priority') as HTMLSelectElement).value = task.priority || 'medium';
   (form.elements.namedItem('deadline') as HTMLInputElement).value = toDateInputValue(task.deadline);
 
-  if (!editModalInstance) {
-    const modalElDom = document.getElementById('editTaskModal')!;
-    editModalInstance = window.bootstrap ? new window.bootstrap.Modal(modalElDom) : null;
+  if (!editModalInstance && window.bootstrap) {
+    editModalInstance = new window.bootstrap.Modal(modalEl);
   }
-  editModalInstance.show();
+  editModalInstance?.show();
 }
 
 
@@ -302,7 +344,7 @@ async function handleCreateTaskSubmit(ev: SubmitEvent, container: HTMLElement) {
     return;
   }
 
-  const newTask: Omit<TaskType, 'id'> = {
+  const newTask: TaskCreatePayload = {
     title: values.title,
     description: values.description,
     status: values.status ?? 'todo',
@@ -323,10 +365,12 @@ export function initUI() {
     const container = document.getElementById('tasks') as HTMLElement | null;
     const form = document.getElementById('task-form') as HTMLFormElement | null;
     if (!container || !form) return;
+    tasksContainerEl = container;
 
     renderTasks(container).catch((e) => console.error(e));
 
     form.addEventListener('submit', (ev) => handleCreateTaskSubmit(ev, container));
+    container.addEventListener('click', handleTasksContainerClick);
   });
 }
 
