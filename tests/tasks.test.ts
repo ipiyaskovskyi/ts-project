@@ -1,24 +1,9 @@
+import 'reflect-metadata';
 import request from 'supertest';
 import { app } from '../src/server.js';
 import { sequelize, Task, User } from '../src/models/index.js';
-import { unlinkSync } from 'fs';
-import { existsSync } from 'fs';
-
-const TEST_DB_PATH = './test.db';
-
-async function cleanupDatabase() {
-  try {
-    if (existsSync(TEST_DB_PATH)) {
-      await sequelize.close();
-      unlinkSync(TEST_DB_PATH);
-    }
-  } catch (error) {
-    console.error('Error cleaning up test database:', error);
-  }
-}
 
 beforeAll(async () => {
-  await cleanupDatabase();
   try {
     await sequelize.authenticate();
   } catch (error) {
@@ -29,9 +14,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await sequelize.close();
-  if (existsSync(TEST_DB_PATH)) {
-    unlinkSync(TEST_DB_PATH);
-  }
 });
 
 beforeEach(async () => {

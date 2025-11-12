@@ -1,47 +1,16 @@
-import { DataTypes, Model, type Optional, type Sequelize } from 'sequelize';
-
-let sequelizeInstance: Sequelize;
-let isInitialized = false;
-
-export function setSequelizeInstance(instance: Sequelize) {
-  sequelizeInstance = instance;
-  if (!isInitialized) {
-    User.init(
-      {
-        id: {
-          type: DataTypes.INTEGER,
-          autoIncrement: true,
-          primaryKey: true,
-        },
-        name: {
-          type: DataTypes.STRING,
-          allowNull: false,
-        },
-        email: {
-          type: DataTypes.STRING,
-          allowNull: false,
-          unique: true,
-        },
-        createdAt: {
-          type: DataTypes.DATE,
-          allowNull: false,
-          defaultValue: DataTypes.NOW,
-        },
-        updatedAt: {
-          type: DataTypes.DATE,
-          allowNull: false,
-          defaultValue: DataTypes.NOW,
-        },
-      },
-      {
-        sequelize: sequelizeInstance,
-        modelName: 'User',
-        tableName: 'users',
-      }
-    );
-    isInitialized = true;
-  }
-}
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  AllowNull,
+  Unique,
+  CreatedAt,
+  UpdatedAt,
+  HasMany,
+} from 'sequelize-typescript';
+import type { Optional } from 'sequelize';
+import { Task } from './Task.model.js';
 
 export interface UserAttributes {
   id: number;
@@ -53,11 +22,42 @@ export interface UserAttributes {
 
 export interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
 
+@Table({
+  tableName: 'users',
+  timestamps: true,
+})
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
   declare id: number;
-  declare name: string;
-  declare email: string;
-  declare readonly createdAt: Date;
-  declare readonly updatedAt: Date;
-}
 
+  @AllowNull(false)
+  @Column({
+    type: DataType.STRING,
+  })
+  declare name: string;
+
+  @AllowNull(false)
+  @Unique
+  @Column({
+    type: DataType.STRING,
+  })
+  declare email: string;
+
+  @CreatedAt
+  @Column({ field: 'createdAt', type: DataType.DATE })
+  declare readonly createdAt: Date;
+
+  @UpdatedAt
+  @Column({ field: 'updatedAt', type: DataType.DATE })
+  declare readonly updatedAt: Date;
+
+  @HasMany(() => Task, {
+    foreignKey: 'assigneeId',
+    as: 'tasks',
+  })
+  declare tasks?: Task[];
+}

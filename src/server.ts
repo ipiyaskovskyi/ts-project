@@ -1,9 +1,11 @@
+import 'reflect-metadata';
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
-import { sequelize, Task, User } from './models/index.js';
+import { sequelize, Task, User } from './models/index.ts';
+import './config/database';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = 3001;
 
 app.use(cors());
 app.use(express.json());
