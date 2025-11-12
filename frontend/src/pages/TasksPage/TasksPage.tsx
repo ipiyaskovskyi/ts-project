@@ -48,11 +48,11 @@ export function TasksPage() {
   return (
     <section className="tasks-page">
       <div className="tasks-page__grid">
-        <TaskForm onSubmit={handleCreate} submitting={isSubmitting} />
+      <TaskForm onSubmit={handleCreate} submitting={isSubmitting} />
         <div className="tasks-page__list-card">
           <h2>Recent Tasks</h2>
-          <TasksList tasks={tasks} isLoading={isLoading} error={error} onRetry={loadTasks} />
-        </div>
+      <TasksList tasks={tasks} isLoading={isLoading} error={error} onRetry={loadTasks} />
+    </div>
       </div>
     </section>
   );

@@ -53,26 +53,26 @@ export function TaskForm({ onSubmit, submitting = false }: TaskFormProps) {
           <label htmlFor="title" className="form-label">
             Title *
           </label>
-          <input
+        <input
             id="title"
             type="text"
             {...register('title')}
             className={`form-input${errors.title ? ' error' : ''}`}
             placeholder="Enter task title"
             aria-invalid={errors.title ? 'true' : 'false'}
-          />
+        />
           {errors.title ? (
             <span className="error-message" role="alert" data-testid="error-title">
               {errors.title.message}
             </span>
-          ) : null}
-        </div>
+        ) : null}
+      </div>
 
         <div className="form-group">
           <label htmlFor="description" className="form-label">
             Description
           </label>
-          <textarea
+        <textarea
             id="description"
             rows={3}
             {...register('description')}
@@ -84,7 +84,7 @@ export function TaskForm({ onSubmit, submitting = false }: TaskFormProps) {
               {errors.description.message}
             </span>
           ) : null}
-        </div>
+      </div>
 
         <div className="form-row">
           <div className="form-group">
@@ -99,13 +99,13 @@ export function TaskForm({ onSubmit, submitting = false }: TaskFormProps) {
               <option value="todo">Todo</option>
               <option value="in-progress">In Progress</option>
               <option value="done">Done</option>
-            </select>
+        </select>
             {errors.status ? (
               <span className="error-message" role="alert">
                 {errors.status.message}
               </span>
             ) : null}
-          </div>
+      </div>
 
           <div className="form-group">
             <label htmlFor="priority" className="form-label">
@@ -119,37 +119,37 @@ export function TaskForm({ onSubmit, submitting = false }: TaskFormProps) {
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>
-            </select>
+        </select>
             {errors.priority ? (
               <span className="error-message" role="alert">
                 {errors.priority.message}
               </span>
             ) : null}
           </div>
-        </div>
+      </div>
 
         <div className="form-group">
           <label htmlFor="deadline" className="form-label">
             Deadline
           </label>
-          <input
+        <input
             id="deadline"
-            type="date"
+          type="date"
             {...register('deadline')}
             className={`form-input${errors.deadline ? ' error' : ''}`}
             aria-invalid={errors.deadline ? 'true' : 'false'}
-          />
+        />
           {errors.deadline ? (
             <span className="error-message" role="alert" data-testid="error-deadline">
               {errors.deadline.message}
             </span>
-          ) : null}
-        </div>
+        ) : null}
+      </div>
 
         <button type="submit" className="submit-button" disabled={isSubmitDisabled}>
           {buttonLabel}
-        </button>
-      </form>
+      </button>
+    </form>
     </div>
   );
 }
