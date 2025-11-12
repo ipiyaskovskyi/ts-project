@@ -1,4 +1,5 @@
-import express, { type Request, type Response } from 'express';
+import 'reflect-metadata';
+import express, { Router, type Request, type Response } from 'express';
 import cors from 'cors';
 import { sequelize, Task, User } from './models/index.js';
 
@@ -7,6 +8,8 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
+
+const tasksRouter = Router();
 
 async function initializeDatabase() {
   try {
@@ -19,7 +22,7 @@ async function initializeDatabase() {
   }
 }
 
-app.get('/tasks', async (_req: Request, res: Response) => {
+tasksRouter.get('/tasks', async (_req: Request, res: Response) => {
   try {
     const tasks = await Task.findAll({
       include: [
@@ -37,7 +40,7 @@ app.get('/tasks', async (_req: Request, res: Response) => {
   }
 });
 
-app.get('/tasks/:id', async (req: Request, res: Response) => {
+tasksRouter.get('/tasks/:id', async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
@@ -65,7 +68,7 @@ app.get('/tasks/:id', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/tasks', async (req: Request, res: Response) => {
+tasksRouter.post('/tasks', async (req: Request, res: Response) => {
   try {
     const { title, description, status, priority, deadline, assigneeId } = req.body;
 
@@ -126,7 +129,7 @@ app.post('/tasks', async (req: Request, res: Response) => {
   }
 });
 
-app.put('/tasks/:id', async (req: Request, res: Response) => {
+tasksRouter.put('/tasks/:id', async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
@@ -213,7 +216,7 @@ app.put('/tasks/:id', async (req: Request, res: Response) => {
   }
 });
 
-app.delete('/tasks/:id', async (req: Request, res: Response) => {
+tasksRouter.delete('/tasks/:id', async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
@@ -232,6 +235,9 @@ app.delete('/tasks/:id', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+app.use('/', tasksRouter);
+app.use('/api', tasksRouter);
 
 async function startServer() {
   await initializeDatabase();

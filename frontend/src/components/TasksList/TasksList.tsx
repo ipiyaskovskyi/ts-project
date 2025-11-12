@@ -1,4 +1,5 @@
 import type { Task } from '../../types/task';
+import './TasksList.css';
 
 function formatDeadline(deadline?: string | null): string {
   if (!deadline) {
@@ -35,16 +36,12 @@ export interface TasksListProps {
 
 export function TasksList({ tasks, isLoading = false, error = null, onRetry }: TasksListProps) {
   if (isLoading) {
-    return (
-      <div role="status" aria-live="polite">
-        Loading tasks…
-      </div>
-    );
+    return <div className="tasks-list__state" role="status" aria-live="polite">Loading tasks…</div>;
   }
 
   if (error) {
     return (
-      <div role="alert">
+      <div className="tasks-list__state" role="alert" aria-live="assertive">
         <p>{error}</p>
         {onRetry ? (
           <button type="button" onClick={onRetry}>
@@ -57,16 +54,16 @@ export function TasksList({ tasks, isLoading = false, error = null, onRetry }: T
 
   if (tasks.length === 0) {
     return (
-      <div aria-live="polite" data-testid="tasks-empty">
+      <div className="tasks-list__state" aria-live="polite" data-testid="tasks-empty">
         No tasks yet
       </div>
     );
   }
 
   return (
-    <ul aria-label="Tasks list">
+    <ul aria-label="Tasks list" className="tasks-list">
       {tasks.map((task) => (
-        <li key={task.id} data-testid="task-item">
+        <li key={task.id} data-testid="task-item" className="task-card">
           <h3>{task.title}</h3>
           <p>{task.description ?? 'No description'}</p>
           <dl>

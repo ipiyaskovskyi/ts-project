@@ -3,10 +3,10 @@ import userEvent from '@testing-library/user-event';
 import { TaskForm } from './TaskForm';
 
 describe('TaskForm', () => {
-  it('disables submit button when form is empty or invalid', () => {
+  it('disables submit button when form is invalid', () => {
     render(<TaskForm />);
 
-    const submitButton = screen.getByRole('button', { name: /submit/i });
+    const submitButton = screen.getByRole('button', { name: /create task/i });
     expect(submitButton).toBeDisabled();
   });
 
@@ -15,21 +15,24 @@ describe('TaskForm', () => {
     render(<TaskForm />);
 
     const titleInput = screen.getByLabelText(/title/i);
-    const submitButton = screen.getByRole('button', { name: /submit/i });
+    const submitButton = screen.getByRole('button', { name: /create task/i });
 
     await user.type(titleInput, 'Prepare meeting agenda');
     expect(submitButton).toBeEnabled();
   });
 
-  it('shows validation messages when submitting invalid data', async () => {
+  it('shows validation messages for invalid fields', async () => {
     const user = userEvent.setup();
     render(<TaskForm />);
 
     const titleInput = screen.getByLabelText(/title/i);
-    await user.click(titleInput);
-    await user.tab();
-    const titleError = await screen.findByTestId('error-title');
-    expect(titleError).toHaveTextContent('Title is required');
+    await user.type(titleInput, 'ab');
+    const minError = await screen.findByTestId('error-title');
+    expect(minError).toHaveTextContent('Title must be at least 3 characters long');
+
+    await user.clear(titleInput);
+    const requiredError = await screen.findByTestId('error-title');
+    expect(requiredError).toHaveTextContent('Title is required');
 
     const deadlineInput = screen.getByLabelText(/deadline/i);
     const yesterday = new Date();
@@ -38,11 +41,8 @@ describe('TaskForm', () => {
 
     await user.clear(deadlineInput);
     await user.type(deadlineInput, formatted);
-    await user.tab();
 
     const deadlineError = await screen.findByTestId('error-deadline');
-    expect(deadlineError).toHaveTextContent('Deadline must be in the future');
+    expect(deadlineError).toHaveTextContent('Deadline cannot be in the past');
   });
 });
-
-

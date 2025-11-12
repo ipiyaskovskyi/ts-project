@@ -1,24 +1,9 @@
-import { existsSync, unlinkSync } from 'node:fs';
-import path from 'node:path';
+import 'reflect-metadata';
 import request from 'supertest';
 import { app } from '../src/server.js';
 import { sequelize, Task, User } from '../src/models/index.js';
 
-const TEST_DB_PATH = path.resolve(process.cwd(), 'backend', 'test.sqlite');
-
-async function cleanupDatabase() {
-  try {
-    if (existsSync(TEST_DB_PATH)) {
-      await sequelize.close();
-      unlinkSync(TEST_DB_PATH);
-    }
-  } catch (error) {
-    console.error('Error cleaning up test database:', error);
-  }
-}
-
 beforeAll(async () => {
-  await cleanupDatabase();
   try {
     await sequelize.authenticate();
   } catch (error) {
@@ -29,9 +14,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await sequelize.close();
-  if (existsSync(TEST_DB_PATH)) {
-    unlinkSync(TEST_DB_PATH);
-  }
 });
 
 beforeEach(async () => {
@@ -70,14 +52,14 @@ describe('GET /tasks', () => {
     const response = await request(app).get('/tasks');
     expect(response.status).toBe(200);
     expect(response.body).toHaveLength(2);
-    
+
     const task1Response = response.body.find((t: any) => t.id === task1.id);
     expect(task1Response).toBeDefined();
     expect(task1Response.title).toBe('Task 1');
     expect(task1Response.assignee).toBeDefined();
     expect(task1Response.assignee.id).toBe(user.id);
     expect(task1Response.assignee.name).toBe('Test User');
-    
+
     const task2Response = response.body.find((t: any) => t.id === task2.id);
     expect(task2Response).toBeDefined();
     expect(task2Response.title).toBe('Task 2');
@@ -167,7 +149,7 @@ describe('POST /tasks', () => {
   it('should return 400 when deadline is in the past', async () => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     const response = await request(app)
       .post('/tasks')
       .send({
@@ -214,7 +196,7 @@ describe('POST /tasks', () => {
   it('should create task successfully (201)', async () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    
+
     const response = await request(app)
       .post('/tasks')
       .send({
@@ -224,7 +206,7 @@ describe('POST /tasks', () => {
         priority: 'high',
         deadline: tomorrow.toISOString(),
       });
-    
+
     expect(response.status).toBe(201);
     expect(response.body.id).toBeDefined();
     expect(response.body.title).toBe('New Task');
@@ -250,7 +232,7 @@ describe('POST /tasks', () => {
         priority: 'medium',
         assigneeId: user.id,
       });
-    
+
     expect(response.status).toBe(201);
     expect(response.body.id).toBeDefined();
     expect(response.body.title).toBe('Assigned Task');
@@ -265,7 +247,7 @@ describe('POST /tasks', () => {
       .send({
         title: 'Minimal Task',
       });
-    
+
     expect(response.status).toBe(201);
     expect(response.body.title).toBe('Minimal Task');
     expect(response.body.status).toBe('todo');
@@ -386,7 +368,7 @@ describe('PUT /tasks/:id', () => {
         priority: 'high',
         deadline: tomorrow.toISOString(),
       });
-    
+
     expect(response.status).toBe(200);
     expect(response.body.id).toBe(task.id);
     expect(response.body.title).toBe('Updated Title');
@@ -410,10 +392,8 @@ describe('PUT /tasks/:id', () => {
 
     const response = await request(app)
       .put(`/tasks/${task.id}`)
-      .send({
-        assigneeId: user.id,
-      });
-    
+      .send({ assigneeId: user.id });
+
     expect(response.status).toBe(200);
     expect(response.body.assignee).toBeDefined();
     expect(response.body.assignee.id).toBe(user.id);
@@ -434,10 +414,8 @@ describe('PUT /tasks/:id', () => {
 
     const response = await request(app)
       .put(`/tasks/${task.id}`)
-      .send({
-        assigneeId: null,
-      });
-    
+      .send({ assigneeId: null });
+
     expect(response.status).toBe(200);
     expect(response.body.assignee).toBeNull();
   });
@@ -455,10 +433,8 @@ describe('PUT /tasks/:id', () => {
 
     const response = await request(app)
       .put(`/tasks/${task.id}`)
-      .send({
-        deadline: null,
-      });
-    
+      .send({ deadline: null });
+
     expect(response.status).toBe(200);
     expect(response.body.deadline).toBeNull();
   });
@@ -473,10 +449,8 @@ describe('PUT /tasks/:id', () => {
 
     const response = await request(app)
       .put(`/tasks/${task.id}`)
-      .send({
-        status: 'done',
-      });
-    
+      .send({ status: 'done' });
+
     expect(response.status).toBe(200);
     expect(response.body.title).toBe('Original Title');
     expect(response.body.description).toBe('Original Description');
@@ -536,4 +510,3 @@ describe('DELETE /tasks/:id', () => {
     expect(userStillExists).toBeDefined();
   });
 });
-

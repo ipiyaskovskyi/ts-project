@@ -3,6 +3,7 @@ import { createTask, listTasks } from '../../api/tasks';
 import type { CreateTaskInput, Task } from '../../types/task';
 import { TaskForm } from '../../components/TaskForm/TaskForm';
 import { TasksList } from '../../components/TasksList/TasksList';
+import './TasksPage.css';
 
 export function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -45,11 +46,15 @@ export function TasksPage() {
   );
 
   return (
-    <div>
-      <h1>Tasks</h1>
-      <TaskForm onSubmit={handleCreate} submitting={isSubmitting} />
-      <TasksList tasks={tasks} isLoading={isLoading} error={error} onRetry={loadTasks} />
-    </div>
+    <section className="tasks-page">
+      <div className="tasks-page__grid">
+        <TaskForm onSubmit={handleCreate} submitting={isSubmitting} />
+        <div className="tasks-page__list-card">
+          <h2>Recent Tasks</h2>
+          <TasksList tasks={tasks} isLoading={isLoading} error={error} onRetry={loadTasks} />
+        </div>
+      </div>
+    </section>
   );
 }
 

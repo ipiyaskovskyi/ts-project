@@ -1,0 +1,80 @@
+.tasks-list__state {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  color: #1f2937;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.tasks-list__state button {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tasks-list__state button:hover {
+  transform: translateY(-1px);
+}
+
+.tasks-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.task-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.task-card h3 {
+  margin: 0 0 0.75rem;
+  color: #111827;
+}
+
+.task-card p {
+  margin: 0 0 1rem;
+  color: #4b5563;
+}
+
+.task-card dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.task-card dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+}
+
+.task-card dd {
+  margin: 0;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+@media (max-width: 640px) {
+  .task-card {
+    padding: 1.25rem;
+  }
+
+  .task-card dl {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,39 @@
+.tasks-page {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.tasks-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  align-items: start;
+}
+
+.tasks-page__list-card {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(4px);
+}
+
+.tasks-page__list-card h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #1f2937;
+  font-size: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .tasks-page {
+    gap: 1.5rem;
+  }
+
+  .tasks-page__list-card {
+    padding: 1.5rem;
+  }
+}

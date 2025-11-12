@@ -1,31 +1,15 @@
-import type { ChangeEvent, FormEvent } from 'react';
-import { useMemo, useState } from 'react';
-import type { CreateTaskInput, Priority, Status } from '../../types/task';
-
-const STATUSES: Status[] = ['todo', 'in-progress', 'done'];
-const PRIORITIES: Priority[] = ['low', 'medium', 'high'];
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import type { CreateTaskInput } from '../../types/task';
+import { taskSchema, type TaskFormValues } from '../../schemas/taskSchema';
+import './TaskForm.css';
 
 export interface TaskFormProps {
   onSubmit?: (payload: CreateTaskInput) => Promise<void> | void;
   submitting?: boolean;
 }
 
-type FieldName = 'title' | 'deadline';
-
-interface ValidationErrors {
-  title?: string;
-  deadline?: string;
-}
-
-interface TaskFormState {
-  title: string;
-  description: string;
-  status: Status;
-  priority: Priority;
-  deadline: string;
-}
-
-const initialState: TaskFormState = {
+const defaultValues: TaskFormValues = {
   title: '',
   description: '',
   status: 'todo',
@@ -34,139 +18,139 @@ const initialState: TaskFormState = {
 };
 
 export function TaskForm({ onSubmit, submitting = false }: TaskFormProps) {
-  const [form, setForm] = useState<TaskFormState>(initialState);
-  const [touched, setTouched] = useState<Record<FieldName, boolean>>({
-    title: false,
-    deadline: false
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isValid, isSubmitting }
+  } = useForm<TaskFormValues>({
+    resolver: zodResolver(taskSchema),
+    mode: 'onChange',
+    defaultValues
   });
 
-  const errors: ValidationErrors = useMemo(() => {
-    const nextErrors: ValidationErrors = {};
-
-    if (!form.title.trim()) {
-      nextErrors.title = 'Title is required';
-    }
-
-    if (form.deadline) {
-      const deadlineDate = new Date(form.deadline);
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-      if (Number.isNaN(deadlineDate.getTime()) || deadlineDate < now) {
-        nextErrors.deadline = 'Deadline must be in the future';
-      }
-    }
-
-    return nextErrors;
-  }, [form.title, form.deadline]);
-
-  const isValid = useMemo(() => Object.keys(errors).length === 0, [errors]);
-
-  const handleChange = (field: keyof TaskFormState) => (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const value = event.target.value;
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleBlur = (field: FieldName) => () => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-  };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setTouched({ title: true, deadline: true });
-
-    if (!isValid) {
-      return;
-    }
-
+  const onFormSubmit = async (data: TaskFormValues) => {
     const payload: CreateTaskInput = {
-      title: form.title.trim(),
-      description: form.description.trim() || null,
-      status: form.status,
-      priority: form.priority,
-      deadline: form.deadline || null
+      title: data.title.trim(),
+      description: data.description?.trim() ? data.description.trim() : null,
+      status: data.status,
+      priority: data.priority,
+      deadline: data.deadline ? data.deadline : null
     };
 
     await onSubmit?.(payload);
-    setForm(initialState);
-    setTouched({ title: false, deadline: false });
+    reset(defaultValues);
   };
 
-  const isSubmitDisabled = submitting || !isValid;
+  const isSubmitDisabled = submitting || isSubmitting || !isValid;
+  const buttonLabel = submitting || isSubmitting ? 'Creating...' : 'Create Task';
 
   return (
-    <form onSubmit={handleSubmit} aria-label="Create task form">
-      <div>
-        <label htmlFor="task-title">Title</label>
-        <input
-          id="task-title"
-          name="title"
-          value={form.title}
-          onChange={handleChange('title')}
-          onBlur={handleBlur('title')}
-          required
-          aria-invalid={Boolean(errors.title && touched.title)}
-        />
-        {errors.title && touched.title ? (
-          <p role="alert" data-testid="error-title">
-            {errors.title}
-          </p>
-        ) : null}
-      </div>
+    <div className="create-task-form-container">
+      <h2>Create New Task</h2>
+      <form className="create-task-form" onSubmit={handleSubmit(onFormSubmit)} aria-label="Create task form" noValidate>
+        <div className="form-group">
+          <label htmlFor="title" className="form-label">
+            Title *
+          </label>
+          <input
+            id="title"
+            type="text"
+            {...register('title')}
+            className={`form-input${errors.title ? ' error' : ''}`}
+            placeholder="Enter task title"
+            aria-invalid={errors.title ? 'true' : 'false'}
+          />
+          {errors.title ? (
+            <span className="error-message" role="alert" data-testid="error-title">
+              {errors.title.message}
+            </span>
+          ) : null}
+        </div>
 
-      <div>
-        <label htmlFor="task-description">Description</label>
-        <textarea
-          id="task-description"
-          name="description"
-          value={form.description}
-          onChange={handleChange('description')}
-        />
-      </div>
+        <div className="form-group">
+          <label htmlFor="description" className="form-label">
+            Description
+          </label>
+          <textarea
+            id="description"
+            rows={3}
+            {...register('description')}
+            className={`form-textarea${errors.description ? ' error' : ''}`}
+            placeholder="Enter task description"
+          />
+          {errors.description ? (
+            <span className="error-message" role="alert">
+              {errors.description.message}
+            </span>
+          ) : null}
+        </div>
 
-      <div>
-        <label htmlFor="task-status">Status</label>
-        <select id="task-status" name="status" value={form.status} onChange={handleChange('status')}>
-          {STATUSES.map((statusOption) => (
-            <option key={statusOption} value={statusOption}>
-              {statusOption}
-            </option>
-          ))}
-        </select>
-      </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="status" className="form-label">
+              Status *
+            </label>
+            <select
+              id="status"
+              {...register('status')}
+              className={`form-select${errors.status ? ' error' : ''}`}
+            >
+              <option value="todo">Todo</option>
+              <option value="in-progress">In Progress</option>
+              <option value="done">Done</option>
+            </select>
+            {errors.status ? (
+              <span className="error-message" role="alert">
+                {errors.status.message}
+              </span>
+            ) : null}
+          </div>
 
-      <div>
-        <label htmlFor="task-priority">Priority</label>
-        <select id="task-priority" name="priority" value={form.priority} onChange={handleChange('priority')}>
-          {PRIORITIES.map((priorityOption) => (
-            <option key={priorityOption} value={priorityOption}>
-              {priorityOption}
-            </option>
-          ))}
-        </select>
-      </div>
+          <div className="form-group">
+            <label htmlFor="priority" className="form-label">
+              Priority *
+            </label>
+            <select
+              id="priority"
+              {...register('priority')}
+              className={`form-select${errors.priority ? ' error' : ''}`}
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+            {errors.priority ? (
+              <span className="error-message" role="alert">
+                {errors.priority.message}
+              </span>
+            ) : null}
+          </div>
+        </div>
 
-      <div>
-        <label htmlFor="task-deadline">Deadline</label>
-        <input
-          id="task-deadline"
-          name="deadline"
-          type="date"
-          value={form.deadline}
-          onChange={handleChange('deadline')}
-          onBlur={handleBlur('deadline')}
-          aria-invalid={Boolean(errors.deadline && touched.deadline)}
-        />
-        {errors.deadline && touched.deadline ? (
-          <p role="alert" data-testid="error-deadline">
-            {errors.deadline}
-          </p>
-        ) : null}
-      </div>
+        <div className="form-group">
+          <label htmlFor="deadline" className="form-label">
+            Deadline
+          </label>
+          <input
+            id="deadline"
+            type="date"
+            {...register('deadline')}
+            className={`form-input${errors.deadline ? ' error' : ''}`}
+            aria-invalid={errors.deadline ? 'true' : 'false'}
+          />
+          {errors.deadline ? (
+            <span className="error-message" role="alert" data-testid="error-deadline">
+              {errors.deadline.message}
+            </span>
+          ) : null}
+        </div>
 
-      <button type="submit" disabled={isSubmitDisabled}>
-        Submit
-      </button>
-    </form>
+        <button type="submit" className="submit-button" disabled={isSubmitDisabled}>
+          {buttonLabel}
+        </button>
+      </form>
+    </div>
   );
 }
 

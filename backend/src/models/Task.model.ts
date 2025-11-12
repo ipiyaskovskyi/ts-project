@@ -1,71 +1,18 @@
-import { DataTypes, Model, type Optional, type Sequelize } from 'sequelize';
-import { setSequelizeInstance as setUserSequelize } from './User.model.js';
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  AllowNull,
+  Default,
+  ForeignKey,
+  BelongsTo,
+  CreatedAt,
+  UpdatedAt,
+} from 'sequelize-typescript';
+import type { Optional } from 'sequelize';
+import { User } from './User.model.js';
 import type { Status, Priority } from '../dto/Task.js';
-
-let sequelizeInstance: Sequelize;
-let isInitialized = false;
-
-export function setSequelizeInstance(instance: Sequelize) {
-  sequelizeInstance = instance;
-  setUserSequelize(instance);
-  if (!isInitialized) {
-    Task.init(
-      {
-        id: {
-          type: DataTypes.INTEGER,
-          autoIncrement: true,
-          primaryKey: true,
-        },
-        title: {
-          type: DataTypes.STRING,
-          allowNull: false,
-        },
-        description: {
-          type: DataTypes.TEXT,
-          allowNull: true,
-        },
-        status: {
-          type: DataTypes.ENUM('todo', 'in-progress', 'done'),
-          allowNull: false,
-          defaultValue: 'todo',
-        },
-        priority: {
-          type: DataTypes.ENUM('low', 'medium', 'high'),
-          allowNull: false,
-          defaultValue: 'medium',
-        },
-        deadline: {
-          type: DataTypes.DATE,
-          allowNull: true,
-        },
-        assigneeId: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-          references: {
-            model: 'users',
-            key: 'id',
-          },
-        },
-        createdAt: {
-          type: DataTypes.DATE,
-          allowNull: false,
-          defaultValue: DataTypes.NOW,
-        },
-        updatedAt: {
-          type: DataTypes.DATE,
-          allowNull: false,
-          defaultValue: DataTypes.NOW,
-        },
-      },
-      {
-        sequelize: sequelizeInstance,
-        modelName: 'Task',
-        tableName: 'tasks',
-      }
-    );
-    isInitialized = true;
-  }
-}
 
 export interface TaskAttributes {
   id: number;
@@ -79,17 +26,73 @@ export interface TaskAttributes {
   updatedAt?: Date;
 }
 
-export interface TaskCreationAttributes extends Optional<TaskAttributes, 'id' | 'description' | 'status' | 'priority' | 'deadline' | 'assigneeId' | 'createdAt' | 'updatedAt'> {}
+export interface TaskCreationAttributes
+  extends Optional<TaskAttributes, 'id' | 'description' | 'status' | 'priority' | 'deadline' | 'assigneeId' | 'createdAt' | 'updatedAt'> {}
 
+@Table({
+  tableName: 'tasks',
+  timestamps: true,
+})
 export class Task extends Model<TaskAttributes, TaskCreationAttributes> implements TaskAttributes {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
   declare id: number;
+
+  @AllowNull(false)
+  @Column({
+    type: DataType.STRING,
+  })
   declare title: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
   declare description?: string | null;
+
+  @AllowNull(false)
+  @Default('todo')
+  @Column({
+    type: DataType.ENUM('todo', 'in-progress', 'done'),
+  })
   declare status: Status;
+
+  @AllowNull(false)
+  @Default('medium')
+  @Column({
+    type: DataType.ENUM('low', 'medium', 'high'),
+  })
   declare priority: Priority;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
   declare deadline?: Date | null;
+
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+    field: 'assigneeId',
+  })
   declare assigneeId?: number | null;
+
+  @BelongsTo(() => User, {
+    foreignKey: 'assigneeId',
+    as: 'assignee',
+  })
+  declare assignee?: User;
+
+  @CreatedAt
+  @Column({ field: 'createdAt', type: DataType.DATE })
   declare readonly createdAt: Date;
+
+  @UpdatedAt
+  @Column({ field: 'updatedAt', type: DataType.DATE })
   declare readonly updatedAt: Date;
 }
 
