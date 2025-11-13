@@ -1,2 +1,8 @@
-npm test
-
+#!/usr/bin/env sh
+npm test 2>&1 | tee /tmp/test-output.log
+TEST_EXIT_CODE=${PIPESTATUS[0]}
+if [ $TEST_EXIT_CODE -ne 0 ]; then
+  echo "Tests failed. Exit code: $TEST_EXIT_CODE"
+  exit $TEST_EXIT_CODE
+fi
+exit 0
