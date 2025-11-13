@@ -4,7 +4,7 @@ import { deleteTask, fetchTaskById, updateTask } from "../../api/tasks";
 import type { KanbanStatus, KanbanTask, Priority, TaskType } from "../../types";
 import { Header } from "../../components/Layout/Header";
 
-export const TicketPage: React.FC = () => {
+export const BoardPage: React.FC = () => {
   const { ticketId } = useParams<{ ticketId: string }>();
   const navigate = useNavigate();
   const [task, setTask] = useState<KanbanTask | null>(null);
@@ -23,15 +23,15 @@ export const TicketPage: React.FC = () => {
 
   const statusOptions: KanbanStatus[] = useMemo(
     () => ["draft", "in_progress", "editing", "done"],
-    [],
+    []
   );
   const priorityOptions: Priority[] = useMemo(
     () => ["low", "medium", "high", "urgent"],
-    [],
+    []
   );
   const typeOptions: TaskType[] = useMemo(
     () => ["Task", "Subtask", "Bug", "Story", "Epic"],
-    [],
+    []
   );
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export const TicketPage: React.FC = () => {
       } catch (err) {
         console.error(err);
         setError(
-          err instanceof Error ? err.message : "Failed to load the ticket",
+          err instanceof Error ? err.message : "Failed to load the ticket"
         );
       } finally {
         setIsLoading(false);
@@ -109,7 +109,7 @@ export const TicketPage: React.FC = () => {
     } catch (err) {
       console.error(err);
       setError(
-        err instanceof Error ? err.message : "Failed to update the ticket",
+        err instanceof Error ? err.message : "Failed to update the ticket"
       );
     } finally {
       setIsSubmitting(false);
@@ -130,7 +130,7 @@ export const TicketPage: React.FC = () => {
     } catch (err) {
       console.error(err);
       setError(
-        err instanceof Error ? err.message : "Failed to delete the ticket",
+        err instanceof Error ? err.message : "Failed to delete the ticket"
       );
     } finally {
       setIsDeleting(false);

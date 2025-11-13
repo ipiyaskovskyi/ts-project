@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Header } from "./components/Layout/Header";
-import { KanbanBoard } from "./components/Kanban/KanbanBoard";
-import { Toolbar } from "./components/Kanban/Toolbar";
+import { Board } from "./components/Board/Board";
+import { Toolbar } from "./components/Board/Toolbar";
 import {
   CreateTaskModal,
   type TaskFormValues,
-} from "./components/Kanban/CreateTaskModal";
+} from "./components/Board/CreateTaskModal";
 import type { KanbanTask, KanbanStatus } from "./types";
 import {
   fetchTasks,
@@ -47,7 +47,7 @@ function App() {
       } catch (err) {
         console.error(err);
         setError(
-          err instanceof Error ? err.message : "Failed to load tasks from API",
+          err instanceof Error ? err.message : "Failed to load tasks from API"
         );
       } finally {
         setIsLoading(false);
@@ -61,7 +61,7 @@ function App() {
     setKanbanTasks((prevTasks) => {
       previousTasksRef.current = prevTasks;
       return prevTasks.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus } : task,
+        task.id === taskId ? { ...task, status: newStatus } : task
       );
     });
 
@@ -76,7 +76,7 @@ function App() {
           setKanbanTasks(previousTasksRef.current);
         }
         setError(
-          err instanceof Error ? err.message : "Failed to update task status",
+          err instanceof Error ? err.message : "Failed to update task status"
         );
       });
   };
@@ -124,8 +124,8 @@ function App() {
 
       setKanbanTasks((prevTasks) =>
         prevTasks.map((task) =>
-          task.id === editingTask.id ? updatedTask : task,
-        ),
+          task.id === editingTask.id ? updatedTask : task
+        )
       );
       setEditingTask(null);
       setError(null);
@@ -146,7 +146,7 @@ function App() {
     try {
       await deleteTask(editingTask.id);
       setKanbanTasks((prevTasks) =>
-        prevTasks.filter((task) => task.id !== editingTask.id),
+        prevTasks.filter((task) => task.id !== editingTask.id)
       );
       setEditingTask(null);
       setError(null);
@@ -233,7 +233,7 @@ function App() {
                 Loading tasks...
               </div>
             ) : (
-              <KanbanBoard
+              <Board
                 tasks={displayedTasks}
                 onTaskMove={handleTaskMove}
                 onTaskEdit={setEditingTask}

@@ -20,7 +20,7 @@ export interface UserResponse {
 }
 
 export const register = async (
-  data: RegisterRequest,
+  data: RegisterRequest
 ): Promise<UserResponse> => {
   const response = await fetch(`${API_BASE_URL}/register`, {
     method: "POST",
@@ -54,4 +54,3 @@ export const login = async (data: LoginRequest): Promise<UserResponse> => {
 
   return response.json();
 };
-

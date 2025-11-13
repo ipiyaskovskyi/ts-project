@@ -1,9 +1,9 @@
 import React from "react";
 import { useDroppable } from "@dnd-kit/core";
 import type { KanbanTask, KanbanStatus } from "../../types";
-import { KanbanCard } from "./KanbanCard";
+import { Card } from "./Card";
 
-interface KanbanColumnProps {
+interface ColumnProps {
   id: KanbanStatus;
   title: string;
   tasks: KanbanTask[];
@@ -18,7 +18,7 @@ const statusColors: Record<KanbanStatus, string> = {
   done: "var(--color-status-done)",
 };
 
-export const KanbanColumn: React.FC<KanbanColumnProps> = ({
+export const Column: React.FC<ColumnProps> = ({
   id,
   title,
   tasks,
@@ -98,7 +98,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
         }}
       >
         {tasks.map((task) => (
-          <KanbanCard key={task.id} task={task} onEdit={onTaskEdit} />
+          <Card key={task.id} task={task} onEdit={onTaskEdit} />
         ))}
       </div>
     </div>

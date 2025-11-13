@@ -24,7 +24,9 @@
 }
 
 @media (max-width: 768px) {
-  .app-content { flex-wrap: wrap; }
+  .app-content {
+    flex-wrap: wrap;
+  }
   .app-content aside {
     width: 100%;
     order: 3;
@@ -32,5 +34,7 @@
     position: relative;
     top: 0;
   }
-  .main-content { min-width: 100%; }
+  .main-content {
+    min-width: 100%;
+  }
 }

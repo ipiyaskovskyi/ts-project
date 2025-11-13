@@ -44,8 +44,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
       if (errorBody?.error) {
         message = errorBody.error;
       }
-    } catch (error) {
-    }
+    } catch (error) {}
     throw new Error(message);
   }
 
@@ -103,7 +102,7 @@ const buildTaskBody = (payload: Partial<CreateTaskPayload>) => {
 };
 
 export async function createTask(
-  payload: CreateTaskPayload,
+  payload: CreateTaskPayload
 ): Promise<KanbanTask> {
   const response = await fetch(API_BASE_URL, {
     method: "POST",
@@ -119,7 +118,7 @@ export async function createTask(
 
 export async function updateTask(
   id: number,
-  payload: Partial<CreateTaskPayload>,
+  payload: Partial<CreateTaskPayload>
 ): Promise<KanbanTask> {
   const response = await fetch(`${API_BASE_URL}/${id}`, {
     method: "PUT",
@@ -145,8 +144,7 @@ export async function deleteTask(id: number): Promise<void> {
       if (errorBody?.error) {
         message = errorBody.error;
       }
-    } catch (error) {
-    }
+    } catch (error) {}
     throw new Error(message);
   }
 }

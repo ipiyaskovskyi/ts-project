@@ -26,7 +26,7 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       expect(screen.queryByText("Create New Task")).not.toBeInTheDocument();
@@ -39,7 +39,7 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       expect(screen.getByText("Create New Task")).toBeInTheDocument();
@@ -58,13 +58,19 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
-      const titleInput = screen.getByLabelText(/Task Title/i) as HTMLInputElement;
+      const titleInput = screen.getByLabelText(
+        /Task Title/i
+      ) as HTMLInputElement;
       const typeSelect = screen.getByLabelText(/Type/i) as HTMLSelectElement;
-      const statusSelect = screen.getByLabelText(/Status/i) as HTMLSelectElement;
-      const prioritySelect = screen.getByLabelText(/Priority/i) as HTMLSelectElement;
+      const statusSelect = screen.getByLabelText(
+        /Status/i
+      ) as HTMLSelectElement;
+      const prioritySelect = screen.getByLabelText(
+        /Priority/i
+      ) as HTMLSelectElement;
 
       expect(titleInput.value).toBe("");
       expect(typeSelect.value).toBe("Task");
@@ -79,7 +85,7 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       const submitButton = screen.getByRole("button", { name: /Create task/i });
@@ -96,7 +102,7 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       const titleInput = screen.getByLabelText(/Task Title/i);
@@ -117,7 +123,7 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       const titleInput = screen.getByLabelText(/Task Title/i);
@@ -157,7 +163,7 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       const titleInput = screen.getByLabelText(/Task Title/i);
@@ -174,7 +180,7 @@ describe("CreateTaskModal", () => {
           expect.objectContaining({
             title: "Test Task",
             description: "Test Description",
-          }),
+          })
         );
       });
     });
@@ -193,7 +199,7 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       const titleInput = screen.getByLabelText(/Task Title/i);
@@ -222,7 +228,7 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       const submitButton = screen.getByRole("button", { name: /Create task/i });
@@ -238,7 +244,7 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       const submitButton = screen.getByRole("button", { name: /Create task/i });
@@ -261,7 +267,7 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       const titleInput = screen.getByLabelText(/Task Title/i);
@@ -291,20 +297,28 @@ describe("CreateTaskModal", () => {
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
           ticketId={123}
-        />,
+        />
       );
 
       expect(screen.getByText("Edit Task")).toBeInTheDocument();
       expect(screen.getByText("TM-123")).toBeInTheDocument();
 
-      const titleInput = screen.getByLabelText(/Task Title/i) as HTMLInputElement;
+      const titleInput = screen.getByLabelText(
+        /Task Title/i
+      ) as HTMLInputElement;
       const descriptionTextarea = screen.getByLabelText(
-        /Description/i,
+        /Description/i
       ) as HTMLTextAreaElement;
       const typeSelect = screen.getByLabelText(/Type/i) as HTMLSelectElement;
-      const statusSelect = screen.getByLabelText(/Status/i) as HTMLSelectElement;
-      const prioritySelect = screen.getByLabelText(/Priority/i) as HTMLSelectElement;
-      const deadlineInput = screen.getByLabelText(/Deadline/i) as HTMLInputElement;
+      const statusSelect = screen.getByLabelText(
+        /Status/i
+      ) as HTMLSelectElement;
+      const prioritySelect = screen.getByLabelText(
+        /Priority/i
+      ) as HTMLSelectElement;
+      const deadlineInput = screen.getByLabelText(
+        /Deadline/i
+      ) as HTMLInputElement;
 
       expect(titleInput.value).toBe("Existing Task");
       expect(descriptionTextarea.value).toBe("Existing Description");
@@ -323,10 +337,12 @@ describe("CreateTaskModal", () => {
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
           onDelete={mockOnDelete}
-        />,
+        />
       );
 
-      expect(screen.getByRole("button", { name: /Delete/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /Delete/i })
+      ).toBeInTheDocument();
     });
 
     it("should not show delete button when onDelete is not provided", () => {
@@ -337,10 +353,12 @@ describe("CreateTaskModal", () => {
           initialValues={initialValues}
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
-      expect(screen.queryByRole("button", { name: /Delete/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /Delete/i })
+      ).not.toBeInTheDocument();
     });
 
     it("should call onDelete when delete button is clicked", async () => {
@@ -355,7 +373,7 @@ describe("CreateTaskModal", () => {
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
           onDelete={mockOnDelete}
-        />,
+        />
       );
 
       const deleteButton = screen.getByRole("button", { name: /Delete/i });
@@ -374,10 +392,12 @@ describe("CreateTaskModal", () => {
           initialValues={initialValues}
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
-      expect(screen.getByRole("button", { name: /Save changes/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /Save changes/i })
+      ).toBeInTheDocument();
     });
 
     it("should call onSubmit with updated values in edit mode", async () => {
@@ -391,14 +411,16 @@ describe("CreateTaskModal", () => {
           initialValues={initialValues}
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       const titleInput = screen.getByLabelText(/Task Title/i);
       await user.clear(titleInput);
       await user.type(titleInput, "Updated Task");
 
-      const submitButton = screen.getByRole("button", { name: /Save changes/i });
+      const submitButton = screen.getByRole("button", {
+        name: /Save changes/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -410,7 +432,7 @@ describe("CreateTaskModal", () => {
             status: "in_progress",
             priority: "high",
             deadline: "2025-12-31",
-          }),
+          })
         );
       });
     });
@@ -425,13 +447,15 @@ describe("CreateTaskModal", () => {
           initialValues={initialValues}
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       const titleInput = screen.getByLabelText(/Task Title/i);
       await user.clear(titleInput);
 
-      const submitButton = screen.getByRole("button", { name: /Save changes/i });
+      const submitButton = screen.getByRole("button", {
+        name: /Save changes/i,
+      });
       expect(submitButton).toBeDisabled();
       expect(mockOnSubmit).not.toHaveBeenCalled();
     });
@@ -444,10 +468,12 @@ describe("CreateTaskModal", () => {
           initialValues={initialValues}
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
-      const submitButton = screen.getByRole("button", { name: /Save changes/i });
+      const submitButton = screen.getByRole("button", {
+        name: /Save changes/i,
+      });
       expect(submitButton).toBeDisabled();
     });
 
@@ -461,10 +487,12 @@ describe("CreateTaskModal", () => {
           initialValues={initialValues}
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
-      const submitButton = screen.getByRole("button", { name: /Save changes/i });
+      const submitButton = screen.getByRole("button", {
+        name: /Save changes/i,
+      });
       expect(submitButton).toBeDisabled();
 
       const titleInput = screen.getByLabelText(/Task Title/i);
@@ -484,7 +512,7 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       const submitButton = screen.getByRole("button", { name: /Create task/i });
@@ -502,7 +530,7 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       const titleInput = screen.getByLabelText(/Task Title/i);
@@ -528,7 +556,7 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       const titleInput = screen.getByLabelText(/Task Title/i);
@@ -559,7 +587,7 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       const cancelButton = screen.getByRole("button", { name: /Cancel/i });
@@ -577,7 +605,7 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       const overlay = screen.getByRole("presentation");
@@ -595,7 +623,7 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       const closeButtons = screen.getAllByRole("button");
@@ -618,7 +646,7 @@ describe("CreateTaskModal", () => {
           mode="create"
           onClose={mockOnClose}
           onSubmit={mockOnSubmit}
-        />,
+        />
       );
 
       const titleInput = screen.getByLabelText(/Task Title/i);
@@ -634,7 +662,7 @@ describe("CreateTaskModal", () => {
             onClose={mockOnClose}
             onSubmit={mockOnSubmit}
           />
-        </BrowserRouter>,
+        </BrowserRouter>
       );
 
       rerender(
@@ -645,12 +673,13 @@ describe("CreateTaskModal", () => {
             onClose={mockOnClose}
             onSubmit={mockOnSubmit}
           />
-        </BrowserRouter>,
+        </BrowserRouter>
       );
 
-      const newTitleInput = screen.getByLabelText(/Task Title/i) as HTMLInputElement;
+      const newTitleInput = screen.getByLabelText(
+        /Task Title/i
+      ) as HTMLInputElement;
       expect(newTitleInput.value).toBe("");
     });
   });
 });
-

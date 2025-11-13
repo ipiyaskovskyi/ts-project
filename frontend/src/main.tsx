@@ -4,10 +4,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./routing/ProtectedRoute";
 import { GuestRoute } from "./routing/GuestRoute";
-import { Login } from "./pages/Auth/Login";
-import { Register } from "./pages/Auth/Register";
 import App from "./App.tsx";
-import { TicketPage } from "./pages/Ticket/TicketPage.tsx";
+import { BoardPage } from "./pages/Board/BoardPage.tsx";
+import { LoginPage } from "./pages/Auth/LoginPage.tsx";
+import { RegisterPage } from "./pages/Auth/RegisterPage.tsx";
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
@@ -19,7 +19,7 @@ createRoot(document.getElementById("root")!).render(
             path="/login"
             element={
               <GuestRoute>
-                <Login />
+                <LoginPage />
               </GuestRoute>
             }
           />
@@ -27,7 +27,7 @@ createRoot(document.getElementById("root")!).render(
             path="/register"
             element={
               <GuestRoute>
-                <Register />
+                <RegisterPage />
               </GuestRoute>
             }
           />
@@ -43,7 +43,7 @@ createRoot(document.getElementById("root")!).render(
             path="/tickets/:ticketId"
             element={
               <ProtectedRoute>
-                <TicketPage />
+                <BoardPage />
               </ProtectedRoute>
             }
           />
@@ -51,5 +51,5 @@ createRoot(document.getElementById("root")!).render(
         </Routes>
       </AuthProvider>
     </BrowserRouter>
-  </StrictMode>,
+  </StrictMode>
 );

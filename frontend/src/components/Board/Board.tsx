@@ -9,16 +9,16 @@ import {
 } from "@dnd-kit/core";
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import type { KanbanTask, KanbanStatus } from "../../types";
-import { KanbanColumn } from "./KanbanColumn";
-import { KanbanCard } from "./KanbanCard";
+import { Column } from "./Column";
+import { Card } from "./Card";
 
-interface KanbanBoardProps {
+interface BoardProps {
   tasks: KanbanTask[];
   onTaskMove?: (taskId: number, newStatus: KanbanStatus) => void;
   onTaskEdit?: (task: KanbanTask) => void;
 }
 
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({
+export const Board: React.FC<BoardProps> = ({
   tasks,
   onTaskMove,
   onTaskEdit,
@@ -30,7 +30,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
       activationConstraint: {
         distance: 8,
       },
-    }),
+    })
   );
 
   const columns: { id: KanbanStatus; title: string }[] = [
@@ -45,7 +45,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
       acc[column.id] = tasks.filter((task) => task.status === column.id);
       return acc;
     },
-    {} as Record<KanbanStatus, KanbanTask[]>,
+    {} as Record<KanbanStatus, KanbanTask[]>
   );
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -95,7 +95,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         }}
       >
         {columns.map((column) => (
-          <KanbanColumn
+          <Column
             key={column.id}
             id={column.id}
             title={column.title}
@@ -113,7 +113,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
               transform: "rotate(5deg)",
             }}
           >
-            <KanbanCard task={activeTask} />
+            <Card task={activeTask} />
           </div>
         ) : null}
       </DragOverlay>

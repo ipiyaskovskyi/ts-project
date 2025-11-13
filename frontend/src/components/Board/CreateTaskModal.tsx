@@ -46,19 +46,19 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
       ...initialValues,
       deadline: initialValues?.deadline ?? DEFAULT_VALUES.deadline,
     }),
-    [initialValues],
+    [initialValues]
   );
 
   const [title, setTitle] = useState(mergedInitialValues.title);
   const [description, setDescription] = useState(
-    mergedInitialValues.description,
+    mergedInitialValues.description
   );
   const [type, setType] = useState<TaskType>(mergedInitialValues.type);
   const [status, setStatus] = useState<KanbanStatus>(
-    mergedInitialValues.status,
+    mergedInitialValues.status
   );
   const [priority, setPriority] = useState<Priority>(
-    mergedInitialValues.priority,
+    mergedInitialValues.priority
   );
   const [deadline, setDeadline] = useState(mergedInitialValues.deadline);
   const [error, setError] = useState("");
@@ -92,7 +92,8 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
     mergedInitialValues,
   ]);
 
-  const isSubmitDisabled = !isFormValid || !hasFormChanged || isSubmitting || isDeleting;
+  const isSubmitDisabled =
+    !isFormValid || !hasFormChanged || isSubmitting || isDeleting;
 
   const resetFormState = useCallback(() => {
     setTitle(mergedInitialValues.title);
@@ -136,7 +137,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
       setError(
         err instanceof Error
           ? err.message
-          : "Something went wrong while submitting the task",
+          : "Something went wrong while submitting the task"
       );
     } finally {
       setIsSubmitting(false);
@@ -156,7 +157,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
     } catch (err) {
       console.error(err);
       setError(
-        err instanceof Error ? err.message : "Failed to delete the task",
+        err instanceof Error ? err.message : "Failed to delete the task"
       );
     } finally {
       setIsDeleting(false);

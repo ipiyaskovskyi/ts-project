@@ -3,7 +3,7 @@ import { useDraggable } from "@dnd-kit/core";
 import { FiEdit2 } from "react-icons/fi";
 import type { KanbanTask } from "../../types";
 
-interface KanbanCardProps {
+interface CardProps {
   task: KanbanTask;
   onEdit?: (task: KanbanTask) => void;
 }
@@ -15,7 +15,7 @@ const priorityColor: Record<KanbanTask["priority"], string> = {
   urgent: "#ff5630",
 };
 
-export const KanbanCard: React.FC<KanbanCardProps> = ({ task, onEdit }) => {
+export const Card: React.FC<CardProps> = ({ task, onEdit }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: task.id });
   const style = transform

@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+import { Link } from "react-router-dom";
 import "./Auth.css";
 
 interface FieldErrors {
@@ -52,7 +51,7 @@ const validateName = (name: string, fieldName: string): string | undefined => {
 
 const validateConfirmPassword = (
   password: string,
-  confirmPassword: string,
+  confirmPassword: string
 ): string | undefined => {
   if (!confirmPassword) {
     return "Please confirm your password";
@@ -63,17 +62,29 @@ const validateConfirmPassword = (
   return undefined;
 };
 
-export const Register: React.FC = () => {
+interface RegisterFormProps {
+  onSubmit: (
+    email: string,
+    password: string,
+    firstname: string,
+    lastname: string
+  ) => Promise<void>;
+  isLoading?: boolean;
+  error?: string;
+}
+
+export const RegisterForm: React.FC<RegisterFormProps> = ({
+  onSubmit,
+  isLoading = false,
+  error,
+}) => {
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [touched, setTouched] = useState<TouchedFields>({});
-  const { register, isLoading } = useAuth();
-  const navigate = useNavigate();
 
   const firstnameError = useMemo(() => {
     if (!touched.firstname) return undefined;
@@ -128,7 +139,6 @@ export const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setTouched({
       firstname: true,
       lastname: true,
@@ -141,9 +151,18 @@ export const Register: React.FC = () => {
     const lastnameErr = validateName(lastname, "Lastname");
     const emailErr = validateEmail(email);
     const passwordErr = validatePassword(password);
-    const confirmPasswordErr = validateConfirmPassword(password, confirmPassword);
+    const confirmPasswordErr = validateConfirmPassword(
+      password,
+      confirmPassword
+    );
 
-    if (firstnameErr || lastnameErr || emailErr || passwordErr || confirmPasswordErr) {
+    if (
+      firstnameErr ||
+      lastnameErr ||
+      emailErr ||
+      passwordErr ||
+      confirmPasswordErr
+    ) {
       setFieldErrors({
         firstname: firstnameErr,
         lastname: lastnameErr,
@@ -155,17 +174,7 @@ export const Register: React.FC = () => {
     }
 
     setFieldErrors({});
-
-    try {
-      const success = await register(email, password, firstname, lastname);
-      if (success) {
-        navigate("/");
-      } else {
-        setError("Registration failed. Please try again.");
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed");
-    }
+    await onSubmit(email, password, firstname, lastname);
   };
 
   return (
@@ -285,7 +294,7 @@ export const Register: React.FC = () => {
                     ...prev,
                     confirmPassword: validateConfirmPassword(
                       e.target.value,
-                      confirmPassword,
+                      confirmPassword
                     ),
                   }));
                 }
@@ -318,7 +327,7 @@ export const Register: React.FC = () => {
                     ...prev,
                     confirmPassword: validateConfirmPassword(
                       password,
-                      e.target.value,
+                      e.target.value
                     ),
                   }));
                 }
@@ -327,14 +336,19 @@ export const Register: React.FC = () => {
                 setTouched((prev) => ({ ...prev, confirmPassword: true }));
                 setFieldErrors((prev) => ({
                   ...prev,
-                  confirmPassword: validateConfirmPassword(password, confirmPassword),
+                  confirmPassword: validateConfirmPassword(
+                    password,
+                    confirmPassword
+                  ),
                 }));
               }}
               placeholder="••••••••"
               disabled={isLoading}
             />
             {fieldErrors.confirmPassword && (
-              <div className="auth-field-error">{fieldErrors.confirmPassword}</div>
+              <div className="auth-field-error">
+                {fieldErrors.confirmPassword}
+              </div>
             )}
           </div>
 
@@ -357,4 +371,3 @@ export const Register: React.FC = () => {
     </div>
   );
 };
-

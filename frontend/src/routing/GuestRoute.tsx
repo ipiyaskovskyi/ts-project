@@ -32,4 +32,3 @@ export const GuestRoute: React.FC<GuestRouteProps> = ({ children }) => {
 
   return <>{children}</>;
 };
-

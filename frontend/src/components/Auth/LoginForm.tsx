@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+import { Link } from "react-router-dom";
 import "./Auth.css";
 
 interface FieldErrors {
@@ -31,14 +30,21 @@ const validatePassword = (password: string): string | undefined => {
   return undefined;
 };
 
-export const Login: React.FC = () => {
+interface LoginFormProps {
+  onSubmit: (email: string, password: string) => Promise<void>;
+  isLoading?: boolean;
+  error?: string;
+}
+
+export const LoginForm: React.FC<LoginFormProps> = ({
+  onSubmit,
+  isLoading = false,
+  error,
+}) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [touched, setTouched] = useState<TouchedFields>({});
-  const { login, isLoading } = useAuth();
-  const navigate = useNavigate();
 
   const emailError = useMemo(() => {
     if (!touched.email) return undefined;
@@ -51,12 +57,13 @@ export const Login: React.FC = () => {
   }, [password, touched.password]);
 
   const isFormValid = useMemo(() => {
-    return !emailError && !passwordError && email.trim() !== "" && password !== "";
+    return (
+      !emailError && !passwordError && email.trim() !== "" && password !== ""
+    );
   }, [emailError, passwordError, email, password]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setTouched({ email: true, password: true });
 
     const emailErr = validateEmail(email);
@@ -71,17 +78,7 @@ export const Login: React.FC = () => {
     }
 
     setFieldErrors({});
-
-    try {
-      const success = await login(email, password);
-      if (success) {
-        navigate("/");
-      } else {
-        setError("Invalid email or password");
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
-    }
+    await onSubmit(email, password);
   };
 
   return (
@@ -171,4 +168,3 @@ export const Login: React.FC = () => {
     </div>
   );
 };
-

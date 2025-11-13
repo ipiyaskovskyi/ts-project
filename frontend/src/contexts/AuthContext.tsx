@@ -13,7 +13,13 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, firstname: string, lastname: string) => Promise<boolean>;
+  register: (
+    email: string,
+    password: string,
+    firstname: string,
+    lastname: string
+  ) => Promise<boolean>;
+  setUser: (userData: User) => void;
   logout: () => void;
 }
 
@@ -59,11 +65,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     email: string,
     password: string,
     firstname: string,
-    lastname: string,
+    lastname: string
   ): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const userData = await apiRegister({ email, password, firstname, lastname });
+      const userData = await apiRegister({
+        email,
+        password,
+        firstname,
+        lastname,
+      });
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
       setIsLoading(false);
@@ -74,13 +85,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  const setUserData = (userData: User) => {
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, isLoading, login, register, setUser: setUserData, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

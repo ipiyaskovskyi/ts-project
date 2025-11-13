@@ -137,7 +137,7 @@ describe("POST /tasks", () => {
     });
     expect(response.status).toBe(400);
     expect(response.body.error).toBe(
-      "Title is required and must be a non-empty string",
+      "Title is required and must be a non-empty string"
     );
   });
 
@@ -148,7 +148,7 @@ describe("POST /tasks", () => {
     });
     expect(response.status).toBe(400);
     expect(response.body.error).toBe(
-      "Title is required and must be a non-empty string",
+      "Title is required and must be a non-empty string"
     );
   });
 

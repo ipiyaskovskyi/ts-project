@@ -10,6 +10,8 @@
     "test": "vitest run",
     "lint": "tsx scripts/lint.ts",
     "lint:staged": "tsx scripts/lint.ts --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,css}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,css}\"",
     "clean": "rm -rf dist"
   },
   "dependencies": {
