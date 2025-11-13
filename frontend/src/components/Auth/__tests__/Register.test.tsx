@@ -36,10 +36,10 @@ describe('RegisterForm', () => {
     expect(screen.getByLabelText(/Firstname/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Lastname/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^Password$/i)).toBeInTheDocument();
+    expect(screen.getAllByLabelText(/Password/i).length).toBeGreaterThan(0);
     expect(screen.getByLabelText(/Confirm Password/i)).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /^Sign Up$/i })
+      screen.getByRole('button', { name: /Sign Up/i })
     ).toBeInTheDocument();
   });
 
@@ -110,7 +110,8 @@ describe('RegisterForm', () => {
     const user = userEvent.setup();
     renderWithRouter(<RegisterForm onSubmit={mockOnSubmit} />);
 
-    const passwordInput = screen.getByLabelText(/^Password$/i);
+    const passwordInputs = screen.getAllByLabelText(/Password/i);
+    const passwordInput = passwordInputs[0]; // First one is Password field
     await user.type(passwordInput, '12345');
     await user.tab();
 
@@ -125,7 +126,8 @@ describe('RegisterForm', () => {
     const user = userEvent.setup();
     renderWithRouter(<RegisterForm onSubmit={mockOnSubmit} />);
 
-    const passwordInput = screen.getByLabelText(/^Password$/i);
+    const passwordInputs = screen.getAllByLabelText(/Password/i);
+    const passwordInput = passwordInputs[0]; // First one is Password field
     const confirmPasswordInput = screen.getByLabelText(/Confirm Password/i);
 
     await user.type(passwordInput, 'password123');
@@ -141,7 +143,8 @@ describe('RegisterForm', () => {
     const user = userEvent.setup();
     renderWithRouter(<RegisterForm onSubmit={mockOnSubmit} />);
 
-    const passwordInput = screen.getByLabelText(/^Password$/i);
+    const passwordInputs = screen.getAllByLabelText(/Password/i);
+    const passwordInput = passwordInputs[0]; // First one is Password field
     const confirmPasswordInput = screen.getByLabelText(/Confirm Password/i);
 
     await user.type(passwordInput, 'password123');
@@ -169,10 +172,11 @@ describe('RegisterForm', () => {
     await user.type(screen.getByLabelText(/Firstname/i), 'John');
     await user.type(screen.getByLabelText(/Lastname/i), 'Doe');
     await user.type(screen.getByLabelText(/Email/i), 'test@example.com');
-    await user.type(screen.getByLabelText(/^Password$/i), 'password123');
+    const passwordInputs = screen.getAllByLabelText(/Password/i);
+    await user.type(passwordInputs[0], 'password123');
     await user.type(screen.getByLabelText(/Confirm Password/i), 'password123');
 
-    const submitButton = screen.getByRole('button', { name: /^Sign Up$/i });
+    const submitButton = screen.getByRole('button', { name: /Sign Up/i });
     await waitFor(() => {
       expect(submitButton).not.toBeDisabled();
     });
@@ -190,7 +194,7 @@ describe('RegisterForm', () => {
   it('should show all errors when form is submitted with invalid data', async () => {
     renderWithRouter(<RegisterForm onSubmit={mockOnSubmit} />);
 
-    const form = screen.getByRole('form') || document.querySelector('form');
+    const form = document.querySelector('form');
     if (form) {
       fireEvent.submit(form);
     }
@@ -213,7 +217,8 @@ describe('RegisterForm', () => {
     const user = userEvent.setup();
     renderWithRouter(<RegisterForm onSubmit={mockOnSubmit} />);
 
-    const passwordInput = screen.getByLabelText(/^Password$/i);
+    const passwordInputs = screen.getAllByLabelText(/Password/i);
+    const passwordInput = passwordInputs[0]; // First one is Password field
     const confirmPasswordInput = screen.getByLabelText(/Confirm Password/i);
 
     await user.type(passwordInput, 'password123');

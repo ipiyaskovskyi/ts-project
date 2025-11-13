@@ -74,6 +74,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       }}
     >
       <Button
+        data-testid="create-task-button"
         variant="contained"
         startIcon={<AddIcon />}
         onClick={onCreateTask}

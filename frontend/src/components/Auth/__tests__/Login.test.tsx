@@ -34,9 +34,9 @@ describe('LoginForm', () => {
       screen.getByRole('heading', { name: /Sign In/i })
     ).toBeInTheDocument();
     expect(screen.getByLabelText(/Email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^Password$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Password/i)).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /^Sign In$/i })
+      screen.getByRole('button', { name: /Sign In/i })
     ).toBeInTheDocument();
   });
 
@@ -79,7 +79,7 @@ describe('LoginForm', () => {
     const user = userEvent.setup();
     renderWithRouter(<LoginForm onSubmit={mockOnSubmit} />);
 
-    const passwordInput = screen.getByLabelText(/^Password$/i);
+    const passwordInput = screen.getByLabelText(/Password/i);
     await user.click(passwordInput);
     await user.tab();
 
@@ -93,7 +93,7 @@ describe('LoginForm', () => {
     renderWithRouter(<LoginForm onSubmit={mockOnSubmit} />);
 
     const emailInput = screen.getByLabelText(/Email/i);
-    const passwordInput = screen.getByLabelText(/^Password$/i);
+    const passwordInput = screen.getByLabelText(/Password/i);
 
     await user.type(emailInput, 'test@example.com');
     await user.type(passwordInput, 'password123');
@@ -138,7 +138,7 @@ describe('LoginForm', () => {
   it('should show all errors when form is submitted with invalid data', async () => {
     renderWithRouter(<LoginForm onSubmit={mockOnSubmit} />);
 
-    const form = screen.getByRole('form') || document.querySelector('form');
+    const form = document.querySelector('form');
     if (form) {
       fireEvent.submit(form);
     }

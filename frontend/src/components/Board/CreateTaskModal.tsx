@@ -323,6 +323,8 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
           <FormControl fullWidth margin="normal">
             <InputLabel>Type</InputLabel>
             <Select
+              id="task-type-select"
+              data-testid="task-type-select"
               value={formState.type}
               label="Type"
               onChange={(e) => updateField('type', e.target.value as TaskType)}
@@ -358,6 +360,8 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
               <FormControl fullWidth margin="normal">
                 <InputLabel>Status</InputLabel>
                 <Select
+                  id="task-status-select"
+                  data-testid="task-status-select"
                   value={formState.status}
                   label="Status"
                   onChange={(e) =>
@@ -382,6 +386,8 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
               <FormControl fullWidth margin="normal">
                 <InputLabel>Priority</InputLabel>
                 <Select
+                  id="task-priority-select"
+                  data-testid="task-priority-select"
                   value={formState.priority}
                   label="Priority"
                   onChange={(e) =>
