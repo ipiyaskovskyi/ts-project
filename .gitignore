@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 backend/*.sqlite
+backend/data/*.sqlite
 backend/dist
 backend/node_modules
 frontend/dist
