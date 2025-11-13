@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Box, Container, Alert, CircularProgress } from '@mui/material';
 import { Header } from './components/Layout/Header';
 import { Board } from './components/Board/Board';
@@ -14,6 +14,7 @@ import {
   updateTask,
   deleteTask,
   type CreateTaskPayload,
+  type TaskFilters,
 } from './api/tasks';
 
 interface FilterState {
@@ -41,7 +42,27 @@ function App() {
     const loadTasks = async () => {
       try {
         setIsLoading(true);
-        const tasks = await fetchTasks();
+        const apiFilters: {
+          status?: Status;
+          priority?: string;
+          createdFrom?: string;
+          createdTo?: string;
+        } = {};
+
+        if (filters.status) {
+          apiFilters.status = filters.status;
+        }
+        if (filters.priority) {
+          apiFilters.priority = filters.priority;
+        }
+        if (filters.createdFrom) {
+          apiFilters.createdFrom = filters.createdFrom;
+        }
+        if (filters.createdTo) {
+          apiFilters.createdTo = filters.createdTo;
+        }
+
+        const tasks = await fetchTasks(apiFilters);
         setKanbanTasks(tasks);
         setError(null);
       } catch (err) {
@@ -55,7 +76,7 @@ function App() {
     };
 
     loadTasks();
-  }, []);
+  }, [filters]);
 
   const handleTaskMove = (taskId: number, newStatus: Status) => {
     setKanbanTasks((prevTasks) => {
@@ -165,39 +186,7 @@ function App() {
     setFilters(newFilters);
   };
 
-  const displayedTasks = useMemo(() => {
-    return kanbanTasks.filter((task) => {
-      if (filters.status && task.status !== filters.status) {
-        return false;
-      }
-
-      if (filters.priority && task.priority !== filters.priority) {
-        return false;
-      }
-
-      if (filters.createdFrom) {
-        const fromDate = new Date(filters.createdFrom);
-        fromDate.setHours(0, 0, 0, 0);
-        const taskDate = new Date(task.createdAt);
-        taskDate.setHours(0, 0, 0, 0);
-        if (taskDate < fromDate) {
-          return false;
-        }
-      }
-
-      if (filters.createdTo) {
-        const toDate = new Date(filters.createdTo);
-        toDate.setHours(23, 59, 59, 999);
-        const taskDate = new Date(task.createdAt);
-        taskDate.setHours(0, 0, 0, 0);
-        if (taskDate > toDate) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [kanbanTasks, filters]);
+  const displayedTasks = kanbanTasks;
 
   return (
     <Box

@@ -49,8 +49,36 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export async function fetchTasks(): Promise<Task[]> {
-  const response = await fetch(API_BASE_URL);
+export interface TaskFilters {
+  status?: Status | '';
+  priority?: string | '';
+  createdFrom?: string;
+  createdTo?: string;
+}
+
+export async function fetchTasks(filters?: TaskFilters): Promise<Task[]> {
+  const queryParams = new URLSearchParams();
+
+  if (filters) {
+    if (filters.status) {
+      queryParams.append('status', filters.status);
+    }
+    if (filters.priority) {
+      queryParams.append('priority', filters.priority);
+    }
+    if (filters.createdFrom) {
+      queryParams.append('createdFrom', filters.createdFrom);
+    }
+    if (filters.createdTo) {
+      queryParams.append('createdTo', filters.createdTo);
+    }
+  }
+
+  const url = queryParams.toString()
+    ? `${API_BASE_URL}?${queryParams.toString()}`
+    : API_BASE_URL;
+
+  const response = await fetch(url);
   const data = await handleResponse<ApiTaskResponse[]>(response);
   return data.map(mapApiTask);
 }
@@ -100,7 +128,6 @@ const buildTaskBody = (payload: Partial<CreateTaskPayload>) => {
     ) {
       body.deadline = null;
     } else {
-      // Якщо deadline вже є ISO string, використовуємо його, інакше перетворюємо
       if (
         typeof payload.deadline === 'string' &&
         payload.deadline.includes('T')

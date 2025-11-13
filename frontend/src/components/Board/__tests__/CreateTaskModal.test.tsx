@@ -62,21 +62,22 @@ describe('CreateTaskModal', () => {
       );
 
       const titleInput = screen.getByLabelText(/Task Title/i);
-      
-      // Material UI Select doesn't expose combobox role with name, check labels and values differently
+
       expect(titleInput).toHaveValue('');
-      
-      // Check that form fields are present
+
       expect(screen.getAllByText('Type').length).toBeGreaterThan(0);
       expect(screen.getAllByText('Status').length).toBeGreaterThan(0);
       expect(screen.getAllByText('Priority').length).toBeGreaterThan(0);
-      
-      // Material UI Select buttons are rendered as buttons with specific classes
-      // Check that form controls with labels exist
+
       const formControls = document.querySelectorAll('.MuiFormControl-root');
-      const selectControls = Array.from(formControls).filter(control => {
+      const selectControls = Array.from(formControls).filter((control) => {
         const label = control.querySelector('label');
-        return label && (label.textContent === 'Type' || label.textContent === 'Status' || label.textContent === 'Priority');
+        return (
+          label &&
+          (label.textContent === 'Type' ||
+            label.textContent === 'Status' ||
+            label.textContent === 'Priority')
+        );
       });
       expect(selectControls.length).toBe(3);
     });
@@ -124,7 +125,7 @@ describe('CreateTaskModal', () => {
       const user = userEvent.setup();
       mockOnSubmit.mockResolvedValue(undefined);
 
-      const { container } = renderWithRouter(
+      renderWithRouter(
         <CreateTaskModal
           isOpen={true}
           mode="create"
@@ -138,52 +139,59 @@ describe('CreateTaskModal', () => {
 
       await user.type(titleInput, 'Test Task');
       await user.type(descriptionTextarea, 'Test Description');
-      
-      // Material UI Select: find FormControl by label (use getAllByText since there are multiple matches)
+
       const typeLabels = screen.getAllByText('Type');
-      const typeLabel = typeLabels.find(label => label.tagName === 'LABEL') || typeLabels[0];
+      const typeLabel =
+        typeLabels.find((label) => label.tagName === 'LABEL') || typeLabels[0];
       const typeFormControl = typeLabel.closest('.MuiFormControl-root');
-      // Material UI Select button might be in different places - try multiple selectors
-      const typeSelectButton = typeFormControl?.querySelector('[role="button"]') || 
-                               typeFormControl?.querySelector('.MuiSelect-select') ||
-                               typeFormControl?.querySelector('button') as HTMLElement;
-      
+      const typeSelectButton =
+        typeFormControl?.querySelector('[role="button"]') ||
+        typeFormControl?.querySelector('.MuiSelect-select') ||
+        (typeFormControl?.querySelector('button') as HTMLElement);
+
       const statusLabels = screen.getAllByText('Status');
-      const statusLabel = statusLabels.find(label => label.tagName === 'LABEL') || statusLabels[0];
+      const statusLabel =
+        statusLabels.find((label) => label.tagName === 'LABEL') ||
+        statusLabels[0];
       const statusFormControl = statusLabel.closest('.MuiFormControl-root');
-      const statusSelectButton = statusFormControl?.querySelector('[role="button"]') || 
-                                 statusFormControl?.querySelector('.MuiSelect-select') ||
-                                 statusFormControl?.querySelector('button') as HTMLElement;
-      
+      const statusSelectButton =
+        statusFormControl?.querySelector('[role="button"]') ||
+        statusFormControl?.querySelector('.MuiSelect-select') ||
+        (statusFormControl?.querySelector('button') as HTMLElement);
+
       const priorityLabels = screen.getAllByText('Priority');
-      const priorityLabel = priorityLabels.find(label => label.tagName === 'LABEL') || priorityLabels[0];
+      const priorityLabel =
+        priorityLabels.find((label) => label.tagName === 'LABEL') ||
+        priorityLabels[0];
       const priorityFormControl = priorityLabel.closest('.MuiFormControl-root');
-      const prioritySelectButton = priorityFormControl?.querySelector('[role="button"]') || 
-                                   priorityFormControl?.querySelector('.MuiSelect-select') ||
-                                   priorityFormControl?.querySelector('button') as HTMLElement;
-      
+      const prioritySelectButton =
+        priorityFormControl?.querySelector('[role="button"]') ||
+        priorityFormControl?.querySelector('.MuiSelect-select') ||
+        (priorityFormControl?.querySelector('button') as HTMLElement);
+
       expect(typeSelectButton).toBeTruthy();
       expect(statusSelectButton).toBeTruthy();
       expect(prioritySelectButton).toBeTruthy();
-      
-      // Click Type select and choose Bug
+
       await user.click(typeSelectButton!);
       await waitFor(() => {
         expect(screen.getByRole('option', { name: 'Bug' })).toBeInTheDocument();
       });
       await user.click(screen.getByRole('option', { name: 'Bug' }));
-      
-      // Click Status select and choose In Progress
+
       await user.click(statusSelectButton!);
       await waitFor(() => {
-        expect(screen.getByRole('option', { name: 'In Progress' })).toBeInTheDocument();
+        expect(
+          screen.getByRole('option', { name: 'In Progress' })
+        ).toBeInTheDocument();
       });
       await user.click(screen.getByRole('option', { name: 'In Progress' }));
-      
-      // Click Priority select and choose High
+
       await user.click(prioritySelectButton!);
       await waitFor(() => {
-        expect(screen.getByRole('option', { name: 'High' })).toBeInTheDocument();
+        expect(
+          screen.getByRole('option', { name: 'High' })
+        ).toBeInTheDocument();
       });
       await user.click(screen.getByRole('option', { name: 'High' }));
 
@@ -370,13 +378,16 @@ describe('CreateTaskModal', () => {
       expect(titleInput).toHaveValue('Existing Task');
       expect(descriptionTextarea).toHaveValue('Existing Description');
       expect(deadlineInput).toHaveValue('2025-12-31');
-      
-      // Material UI Select buttons are rendered as buttons with specific classes
-      // Check that form controls with labels exist
+
       const formControls = document.querySelectorAll('.MuiFormControl-root');
-      const selectControls = Array.from(formControls).filter(control => {
+      const selectControls = Array.from(formControls).filter((control) => {
         const label = control.querySelector('label');
-        return label && (label.textContent === 'Type' || label.textContent === 'Status' || label.textContent === 'Priority');
+        return (
+          label &&
+          (label.textContent === 'Type' ||
+            label.textContent === 'Status' ||
+            label.textContent === 'Priority')
+        );
       });
       expect(selectControls.length).toBe(3);
     });
@@ -671,7 +682,6 @@ describe('CreateTaskModal', () => {
         />
       );
 
-      // Material UI Dialog backdrop can be clicked to close
       const backdrop = document.querySelector('.MuiBackdrop-root');
       if (backdrop) {
         await user.click(backdrop);
@@ -734,9 +744,7 @@ describe('CreateTaskModal', () => {
         </BrowserRouter>
       );
 
-      const newTitleInput = screen.getByLabelText(
-        /Task Title/i
-      );
+      const newTitleInput = screen.getByLabelText(/Task Title/i);
       expect(newTitleInput).toHaveValue('');
     });
   });
