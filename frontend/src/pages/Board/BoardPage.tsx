@@ -1,506 +1,384 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import {
+  Box,
+  Container,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Grid,
+  Alert,
+  CircularProgress,
+  Stack,
+} from '@mui/material';
+import {
+  Delete as DeleteIcon,
+  ArrowBack as ArrowBackIcon,
+} from '@mui/icons-material';
 import { deleteTask, fetchTaskById, updateTask } from '../../api/tasks';
 import type { Status, Task, Priority, TaskType } from '../../types';
 import { Header } from '../../components/Layout/Header';
+import {
+  STATUSES,
+  PRIORITIES,
+  TASK_TYPES,
+  STATUS_LABELS,
+  PRIORITY_LABELS,
+} from '../../components/Board/constants';
 
 export const BoardPage: React.FC = () => {
-    const { ticketId } = useParams<{ ticketId: string }>();
-    const navigate = useNavigate();
-    const [task, setTask] = useState<Task | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
+  const { ticketId } = useParams<{ ticketId: string }>();
+  const navigate = useNavigate();
+  const [task, setTask] = useState<Task | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [type, setType] = useState<TaskType>('Task');
-    const [status, setStatus] = useState<Status>('todo');
-    const [priority, setPriority] = useState<Priority>('medium');
-    const [deadline, setDeadline] = useState('');
+  interface FormData {
+    title: string;
+    description: string;
+    type: TaskType;
+    status: Status;
+    priority: Priority;
+    deadline: string;
+  }
 
-    const statusOptions: Status[] = useMemo(
-        () => ['todo', 'in_progress', 'review', 'done'],
-        []
-    );
-    const priorityOptions: Priority[] = useMemo(
-        () => ['low', 'medium', 'high', 'urgent'],
-        []
-    );
-    const typeOptions: TaskType[] = useMemo(
-        () => ['Task', 'Subtask', 'Bug', 'Story', 'Epic'],
-        []
-    );
+  const initialFormData: FormData = useMemo(
+    () => ({
+      title: task?.title ?? '',
+      description: task?.description ?? '',
+      type: (task?.type ?? 'Task') as TaskType,
+      status: task?.status ?? 'todo',
+      priority: task?.priority ?? 'medium',
+      deadline: task?.deadline ? formatDateInput(task.deadline) : '',
+    }),
+    [task]
+  );
 
-    useEffect(() => {
-        const loadTask = async () => {
-            if (!ticketId) {
-                setError('Ticket ID is missing');
-                setIsLoading(false);
-                return;
-            }
+  const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [titleError, setTitleError] = useState<string>('');
 
-            const numericId = Number(ticketId);
-            if (Number.isNaN(numericId)) {
-                setError('Invalid ticket ID');
-                setIsLoading(false);
-                return;
-            }
+  useEffect(() => {
+    const loadTask = async () => {
+      if (!ticketId) {
+        setError('Ticket ID is missing');
+        setIsLoading(false);
+        return;
+      }
 
-            try {
-                setIsLoading(true);
-                const fetchedTask = await fetchTaskById(numericId);
-                setTask(fetchedTask);
-                setError(null);
-            } catch (err) {
-                console.error(err);
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : 'Failed to load the ticket'
-                );
-            } finally {
-                setIsLoading(false);
-            }
-        };
+      const numericId = Number(ticketId);
+      if (Number.isNaN(numericId)) {
+        setError('Invalid ticket ID');
+        setIsLoading(false);
+        return;
+      }
 
-        loadTask();
-    }, [ticketId]);
-
-    useEffect(() => {
-        if (!task) {
-            return;
-        }
-
-        setTitle(task.title);
-        setDescription(task.description ?? '');
-        setType(task.type ?? 'Task');
-        setStatus(task.status);
-        setPriority(task.priority);
-        setDeadline(task.deadline ? formatDateInput(task.deadline) : '');
-    }, [task]);
-
-    const handleSubmit = async (event: React.FormEvent) => {
-        event.preventDefault();
+      try {
+        setIsLoading(true);
+        const fetchedTask = await fetchTaskById(numericId);
+        setTask(fetchedTask);
         setError(null);
-        setSuccess(null);
-
-        if (!task) {
-            setError('Cannot update unknown ticket');
-            return;
-        }
-
-        if (!title.trim()) {
-            setError('Title cannot be empty');
-            return;
-        }
-
-        try {
-            setIsSubmitting(true);
-            const updated = await updateTask(task.id, {
-                title: title.trim(),
-                description: description.trim() || undefined,
-                status,
-                priority,
-                deadline: deadline
-                    ? new Date(deadline).toISOString()
-                    : undefined,
-            });
-            setTask(updated);
-            setSuccess('Changes saved successfully.');
-        } catch (err) {
-            console.error(err);
-            setError(
-                err instanceof Error
-                    ? err.message
-                    : 'Failed to update the ticket'
-            );
-        } finally {
-            setIsSubmitting(false);
-        }
+      } catch (err) {
+        console.error(err);
+        setError(
+          err instanceof Error ? err.message : 'Failed to load the ticket'
+        );
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    const handleDelete = async () => {
-        if (!task) {
-            return;
-        }
+    loadTask();
+  }, [ticketId]);
 
-        setError(null);
-        setSuccess(null);
-        try {
-            setIsDeleting(true);
-            await deleteTask(task.id);
-            navigate('/');
-        } catch (err) {
-            console.error(err);
-            setError(
-                err instanceof Error
-                    ? err.message
-                    : 'Failed to delete the ticket'
-            );
-        } finally {
-            setIsDeleting(false);
-        }
-    };
+  useEffect(() => {
+    setFormData(initialFormData);
+  }, [initialFormData]);
 
-    return (
-        <>
-            <Header />
-            <div
-                style={{
-                    padding: 'var(--spacing-xxl)',
-                    maxWidth: 960,
-                    margin: '0 auto',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 'var(--spacing-lg)',
-                }}
-            >
-                {isLoading ? (
-                    <div
-                        style={{
-                            padding: 'var(--spacing-lg)',
-                            textAlign: 'center',
-                            color: 'var(--color-text-secondary)',
-                        }}
-                    >
-                        Loading ticket...
-                    </div>
-                ) : error ? (
-                    <div
-                        style={{
-                            padding: 'var(--spacing-md)',
-                            borderRadius: 'var(--radius-md)',
-                            border: '1px solid #ef4444',
-                            backgroundColor: '#fee2e2',
-                            color: '#b91c1c',
-                        }}
-                    >
-                        {error}
-                    </div>
-                ) : !task ? (
-                    <div>Ticket not found.</div>
-                ) : (
-                    <form
-                        onSubmit={handleSubmit}
-                        style={{
-                            padding: 'var(--spacing-xl)',
-                            borderRadius: 'var(--radius-xl)',
-                            border: '1px solid var(--color-border)',
-                            backgroundColor: 'var(--color-bg-primary)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 'var(--spacing-lg)',
-                        }}
-                    >
-                        <header
-                            style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'flex-start',
-                                gap: 'var(--spacing-md)',
-                            }}
-                        >
-                            <div>
-                                <h1
-                                    style={{
-                                        margin: 0,
-                                        fontSize: '1.75rem',
-                                        color: 'var(--color-text-primary)',
-                                    }}
-                                >
-                                    Edit Ticket
-                                </h1>
-                                <p
-                                    style={{
-                                        marginTop: 'var(--spacing-xs)',
-                                        color: 'var(--color-text-secondary)',
-                                    }}
-                                >
-                                    TM-{task.id}
-                                </p>
-                            </div>
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError(null);
+    setSuccess(null);
+    setTitleError('');
 
-                            <button
-                                type="button"
-                                onClick={handleDelete}
-                                disabled={isDeleting || isSubmitting}
-                                style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 'var(--spacing-xs)',
-                                    padding:
-                                        'var(--spacing-sm) var(--spacing-md)',
-                                    borderRadius: 'var(--radius-md)',
-                                    border: '1px solid #dc2626',
-                                    backgroundColor: isDeleting
-                                        ? '#fee2e2'
-                                        : 'transparent',
-                                    color: '#dc2626',
-                                    cursor:
-                                        isDeleting || isSubmitting
-                                            ? 'not-allowed'
-                                            : 'pointer',
-                                    opacity:
-                                        isDeleting || isSubmitting ? 0.7 : 1,
-                                }}
-                            >
-                                <InfoIcon />
-                                {isDeleting ? 'Deleting...' : 'Delete'}
-                            </button>
-                        </header>
+    if (!task) {
+      setError('Cannot update unknown ticket');
+      return;
+    }
 
-                        {success && (
-                            <div
-                                style={{
-                                    padding:
-                                        'var(--spacing-sm) var(--spacing-md)',
-                                    borderRadius: 'var(--radius-md)',
-                                    border: '1px solid #22c55e',
-                                    backgroundColor: '#dcfce7',
-                                    color: '#15803d',
-                                    fontSize: '0.9rem',
-                                }}
-                            >
-                                {success}
-                            </div>
-                        )}
+    if (!formData.title.trim()) {
+      setTitleError('Title cannot be empty');
+      return;
+    }
 
-                        <div>
-                            <label
-                                htmlFor="ticket-title"
-                                style={{
-                                    display: 'block',
-                                    fontSize: '0.9rem',
-                                    fontWeight: 600,
-                                    marginBottom: 'var(--spacing-xs)',
-                                }}
-                            >
-                                Title
-                            </label>
-                            <input
-                                id="ticket-title"
-                                type="text"
-                                value={title}
-                                onChange={(event) =>
-                                    setTitle(event.target.value)
-                                }
-                                style={inputStyle}
-                            />
-                        </div>
+    try {
+      setIsSubmitting(true);
+      const updated = await updateTask(task.id, {
+        title: formData.title.trim(),
+        description: formData.description.trim() || undefined,
+        type: formData.type,
+        status: formData.status,
+        priority: formData.priority,
+        deadline: formData.deadline || undefined,
+      });
+      setTask(updated);
+      setSuccess('Changes saved successfully.');
+    } catch (err) {
+      console.error(err);
+      setError(
+        err instanceof Error ? err.message : 'Failed to update the ticket'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-                        <div>
-                            <label
-                                htmlFor="ticket-description"
-                                style={{
-                                    display: 'block',
-                                    fontSize: '0.9rem',
-                                    fontWeight: 600,
-                                    marginBottom: 'var(--spacing-xs)',
-                                }}
-                            >
-                                Description
-                            </label>
-                            <textarea
-                                id="ticket-description"
-                                value={description}
-                                onChange={(event) =>
-                                    setDescription(event.target.value)
-                                }
-                                rows={6}
-                                style={{
-                                    ...inputStyle,
-                                    resize: 'vertical',
-                                    fontFamily: 'inherit',
-                                }}
-                            />
-                        </div>
+  const handleDelete = async () => {
+    if (!task) {
+      return;
+    }
 
-                        <div
-                            style={{
-                                display: 'grid',
-                                gridTemplateColumns:
-                                    'repeat(auto-fit, minmax(220px, 1fr))',
-                                gap: 'var(--spacing-md)',
-                            }}
-                        >
-                            <Field
-                                label="Status"
-                                value={status}
-                                onChange={(event) =>
-                                    setStatus(event.target.value as Status)
-                                }
-                                options={statusOptions}
-                            />
-                            <Field
-                                label="Priority"
-                                value={priority}
-                                onChange={(event) =>
-                                    setPriority(event.target.value as Priority)
-                                }
-                                options={priorityOptions}
-                            />
-                            <Field
-                                label="Type"
-                                value={type}
-                                onChange={(event) =>
-                                    setType(event.target.value as TaskType)
-                                }
-                                options={typeOptions}
-                            />
-                            <div>
-                                <label
-                                    htmlFor="ticket-deadline"
-                                    style={{
-                                        display: 'block',
-                                        fontSize: '0.9rem',
-                                        fontWeight: 600,
-                                        marginBottom: 'var(--spacing-xs)',
-                                    }}
-                                >
-                                    Deadline
-                                </label>
-                                <input
-                                    id="ticket-deadline"
-                                    type="date"
-                                    value={deadline}
-                                    onChange={(event) =>
-                                        setDeadline(event.target.value)
-                                    }
-                                    style={inputStyle}
-                                />
-                            </div>
-                        </div>
+    setError(null);
+    setSuccess(null);
+    try {
+      setIsDeleting(true);
+      await deleteTask(task.id);
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+      setError(
+        err instanceof Error ? err.message : 'Failed to delete the ticket'
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
-                        <div
-                            style={{
-                                display: 'flex',
-                                justifyContent: 'flex-end',
-                                gap: 'var(--spacing-sm)',
-                            }}
-                        >
-                            <button
-                                type="button"
-                                onClick={() => navigate(-1)}
-                                style={{
-                                    padding:
-                                        'var(--spacing-sm) var(--spacing-md)',
-                                    borderRadius: 'var(--radius-md)',
-                                    border: '1px solid var(--color-border)',
-                                    backgroundColor: 'var(--color-bg-primary)',
-                                    color: 'var(--color-text-secondary)',
-                                    cursor: 'pointer',
-                                }}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={isSubmitting || isDeleting}
-                                style={{
-                                    padding:
-                                        'var(--spacing-sm) var(--spacing-md)',
-                                    borderRadius: 'var(--radius-md)',
-                                    border: 'none',
-                                    backgroundColor:
-                                        'var(--color-status-in-progress)',
-                                    color: 'white',
-                                    cursor:
-                                        isSubmitting || isDeleting
-                                            ? 'not-allowed'
-                                            : 'pointer',
-                                    opacity:
-                                        isSubmitting || isDeleting ? 0.7 : 1,
-                                }}
-                            >
-                                {isSubmitting ? 'Saving...' : 'Save changes'}
-                            </button>
-                        </div>
-                    </form>
-                )}
-            </div>
-        </>
-    );
-};
+  const handleCancel = () => {
+    navigate(-1);
+  };
 
-interface FieldProps {
-    label: string;
-    value: string;
-    options: string[];
-    onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
-}
-
-const Field: React.FC<FieldProps> = ({ label, value, options, onChange }) => (
-    <div>
-        <label
-            style={{
-                display: 'block',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                marginBottom: 'var(--spacing-xs)',
-            }}
-        >
-            {label}
-        </label>
-        <select value={value} onChange={onChange} style={inputStyle}>
-            {options.map((option) => (
-                <option key={option} value={option}>
-                    {option}
-                </option>
-            ))}
-        </select>
-    </div>
-);
-
-const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: 'var(--spacing-sm) var(--spacing-md)',
-    border: '1px solid var(--color-border)',
-    borderRadius: 'var(--radius-md)',
-    backgroundColor: 'var(--color-bg-primary)',
-    color: 'var(--color-text-primary)',
-    fontSize: '0.95rem',
-    transition: 'border-color var(--transition-fast)',
-};
-
-const InfoIcon: React.FC = () => (
-    <svg
-        width={16}
-        height={16}
-        viewBox="0 0 16 16"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+      }}
     >
-        <path
-            d="M8 14.667a6.667 6.667 0 1 0 0-13.334 6.667 6.667 0 0 0 0 13.334Z"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        />
-        <path
-            d="M8 10.667V8"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        />
-        <path
-            d="M8 5.333h.007"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        />
-    </svg>
-);
+      <Header />
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        {isLoading ? (
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            minHeight={400}
+          >
+            <CircularProgress />
+          </Box>
+        ) : error && !task ? (
+          <Alert severity="error">{error}</Alert>
+        ) : !task ? (
+          <Alert severity="warning">Ticket not found.</Alert>
+        ) : (
+          <Paper elevation={2} sx={{ p: 4 }}>
+            <Stack spacing={3}>
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="flex-start"
+              >
+                <Box>
+                  <Typography variant="h4" component="h1" gutterBottom>
+                    Edit Ticket
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    TM-{task.id}
+                  </Typography>
+                </Box>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  startIcon={<DeleteIcon />}
+                  onClick={handleDelete}
+                  disabled={isDeleting || isSubmitting}
+                >
+                  {isDeleting ? 'Deleting...' : 'Delete'}
+                </Button>
+              </Box>
+
+              {error && (
+                <Alert severity="error" onClose={() => setError(null)}>
+                  {error}
+                </Alert>
+              )}
+
+              {success && (
+                <Alert severity="success" onClose={() => setSuccess(null)}>
+                  {success}
+                </Alert>
+              )}
+
+              <form onSubmit={handleSubmit}>
+                <Stack spacing={3}>
+                  <TextField
+                    fullWidth
+                    label="Title"
+                    required
+                    value={formData.title}
+                    onChange={(e) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        title: e.target.value,
+                      }));
+                      if (titleError) setTitleError('');
+                    }}
+                    error={!!titleError}
+                    helperText={titleError}
+                  />
+
+                  <TextField
+                    fullWidth
+                    label="Description"
+                    multiline
+                    rows={6}
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
+                  />
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <FormControl fullWidth>
+                        <InputLabel>Status</InputLabel>
+                        <Select
+                          value={formData.status}
+                          label="Status"
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              status: e.target.value as Status,
+                            }))
+                          }
+                        >
+                          {STATUSES.map((statusOption) => (
+                            <MenuItem key={statusOption} value={statusOption}>
+                              {STATUS_LABELS[statusOption]}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <FormControl fullWidth>
+                        <InputLabel>Priority</InputLabel>
+                        <Select
+                          value={formData.priority}
+                          label="Priority"
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              priority: e.target.value as Priority,
+                            }))
+                          }
+                        >
+                          {PRIORITIES.map((priorityOption) => (
+                            <MenuItem
+                              key={priorityOption}
+                              value={priorityOption}
+                            >
+                              {PRIORITY_LABELS[priorityOption]}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <FormControl fullWidth>
+                        <InputLabel>Type</InputLabel>
+                        <Select
+                          value={formData.type}
+                          label="Type"
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              type: e.target.value as TaskType,
+                            }))
+                          }
+                        >
+                          {TASK_TYPES.map((typeOption) => (
+                            <MenuItem key={typeOption} value={typeOption}>
+                              {typeOption}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        type="date"
+                        label="Deadline"
+                        value={formData.deadline}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            deadline: e.target.value,
+                          }))
+                        }
+                        InputLabelProps={{
+                          shrink: true,
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
+
+                  <Box display="flex" justifyContent="flex-end" gap={2}>
+                    <Button
+                      variant="outlined"
+                      startIcon={<ArrowBackIcon />}
+                      onClick={handleCancel}
+                      disabled={isSubmitting || isDeleting}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      disabled={isSubmitting || isDeleting}
+                    >
+                      {isSubmitting ? 'Saving...' : 'Save changes'}
+                    </Button>
+                  </Box>
+                </Stack>
+              </form>
+            </Stack>
+          </Paper>
+        )}
+      </Container>
+    </Box>
+  );
+};
 
 function formatDateInput(date: Date | string): string {
-    const instance = date instanceof Date ? date : new Date(date);
-    const year = instance.getFullYear();
-    const month = `${instance.getMonth() + 1}`.padStart(2, '0');
-    const day = `${instance.getDate()}`.padStart(2, '0');
-    return `${year}-${month}-${day}`;
+  const instance = date instanceof Date ? date : new Date(date);
+  const year = instance.getFullYear();
+  const month = `${instance.getMonth() + 1}`.padStart(2, '0');
+  const day = `${instance.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }

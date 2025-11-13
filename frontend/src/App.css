@@ -1,40 +1,40 @@
 .app-container {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    background-color: var(--color-bg-secondary);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-bg-secondary);
 }
 
 .app-content {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
+  display: flex;
+  flex: 1;
+  overflow: hidden;
 }
 
 .main-content {
-    flex: 1;
-    overflow-y: auto;
-    background-color: var(--color-bg-secondary);
+  flex: 1;
+  overflow-y: auto;
+  background-color: var(--color-bg-secondary);
 }
 
 @media (max-width: 1024px) {
-    .app-content aside {
-        width: 250px;
-    }
+  .app-content aside {
+    width: 250px;
+  }
 }
 
 @media (max-width: 768px) {
-    .app-content {
-        flex-wrap: wrap;
-    }
-    .app-content aside {
-        width: 100%;
-        order: 3;
-        max-height: none;
-        position: relative;
-        top: 0;
-    }
-    .main-content {
-        min-width: 100%;
-    }
+  .app-content {
+    flex-wrap: wrap;
+  }
+  .app-content aside {
+    width: 100%;
+    order: 3;
+    max-height: none;
+    position: relative;
+    top: 0;
+  }
+  .main-content {
+    min-width: 100%;
+  }
 }

@@ -1,135 +1,118 @@
 import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
-import { FiEdit2 } from 'react-icons/fi';
+import {
+  Card as MuiCard,
+  CardContent,
+  Typography,
+  Chip,
+  IconButton,
+  Stack,
+  Box,
+} from '@mui/material';
+import { Edit as EditIcon, Event as EventIcon } from '@mui/icons-material';
 import type { Task } from '../../types';
+import { format } from 'date-fns';
 
 interface CardProps {
-    task: Task;
-    onEdit?: (task: Task) => void;
+  task: Task;
+  onEdit?: (task: Task) => void;
 }
 
 const priorityColor: Record<Task['priority'], string> = {
-    low: '#97a0af',
-    medium: '#0052cc',
-    high: '#ff5630',
-    urgent: '#ff5630',
+  low: '#97a0af',
+  medium: '#0052cc',
+  high: '#ff5630',
+  urgent: '#ff5630',
 };
 
 export const Card: React.FC<CardProps> = ({ task, onEdit }) => {
-    const { attributes, listeners, setNodeRef, transform, isDragging } =
-        useDraggable({ id: task.id });
-    const style = transform
-        ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
-        : undefined;
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({ id: task.id });
+  const style = transform
+    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
+    : undefined;
 
-    return (
-        <div
-            ref={setNodeRef}
-            style={{
-                backgroundColor: 'var(--color-bg-primary)',
-                borderRadius: 'var(--radius-md)',
-                padding: 'var(--spacing-md)',
-                border: '1px solid var(--color-border)',
-                boxShadow: isDragging ? 'var(--shadow-md)' : 'var(--shadow-sm)',
-                cursor: isDragging ? 'grabbing' : 'grab',
-                transition: isDragging
-                    ? 'none'
-                    : 'box-shadow var(--transition-fast), transform var(--transition-fast)',
-                opacity: isDragging ? 0.7 : 1,
-                ...style,
-            }}
-            {...listeners}
-            {...attributes}
-            onMouseEnter={(e) => {
-                if (!isDragging)
-                    e.currentTarget.style.boxShadow = 'var(--shadow-md)';
-            }}
-            onMouseLeave={(e) => {
-                if (!isDragging)
-                    e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
-            }}
-        >
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    justifyContent: 'space-between',
-                    marginBottom: '6px',
-                }}
+  return (
+    <MuiCard
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      sx={{
+        cursor: isDragging ? 'grabbing' : 'grab',
+        opacity: isDragging ? 0.7 : 1,
+        boxShadow: isDragging ? 2 : 1,
+        transition: isDragging ? 'none' : 'box-shadow 0.2s, transform 0.2s',
+        '&:hover': {
+          boxShadow: isDragging ? 2 : 3,
+        },
+        ...style,
+      }}
+    >
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+        <Stack direction="row" spacing={1} alignItems="flex-start" mb={1}>
+          <Typography variant="body1" fontWeight={600} sx={{ flex: 1 }}>
+            {task.title}
+          </Typography>
+          {onEdit && (
+            <IconButton
+              size="small"
+              onClick={(event) => {
+                event.stopPropagation();
+                event.preventDefault();
+                onEdit(task);
+              }}
             >
-                <h3
-                    style={{
-                        fontSize: '0.95rem',
-                        fontWeight: 600,
-                        margin: 0,
-                        color: 'var(--color-text-primary)',
-                    }}
-                >
-                    {task.title}
-                </h3>
-                <div style={{ display: 'flex', gap: 6 }}>
-                    <span
-                        style={{
-                            fontSize: '0.7rem',
-                            color: 'var(--color-text-secondary)',
-                            backgroundColor: 'var(--color-bg-tertiary)',
-                            border: '1px solid var(--color-border)',
-                            borderRadius: 999,
-                            padding: '2px 8px',
-                        }}
-                    >
-                        {task.type ?? 'Task'}
-                    </span>
-                    <span
-                        style={{
-                            fontSize: '0.7rem',
-                            color: '#fff',
-                            backgroundColor: priorityColor[task.priority],
-                            borderRadius: 999,
-                            padding: '2px 8px',
-                        }}
-                    >
-                        {task.priority.toUpperCase()}
-                    </span>
-                </div>
-                {onEdit && (
-                    <button
-                        type="button"
-                        onClick={(event) => {
-                            event.stopPropagation();
-                            event.preventDefault();
-                            onEdit(task);
-                        }}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 6,
-                            padding: '4px 8px',
-                            borderRadius: 'var(--radius-sm)',
-                            border: '1px solid var(--color-border)',
-                            background: 'var(--color-bg-primary)',
-                            color: 'var(--color-text-secondary)',
-                            fontSize: '0.75rem',
-                            cursor: 'pointer',
-                        }}
-                    >
-                        <FiEdit2 size={14} />
-                        Edit
-                    </button>
-                )}
-            </div>
+              <EditIcon fontSize="small" />
+            </IconButton>
+          )}
+        </Stack>
 
-            {task.description && (
-                <p
-                    style={{
-                        fontSize: '0.85rem',
-                        color: 'var(--color-text-secondary)',
-                        marginBottom: '8px',
-                    }}
-                >
-                    {task.description}
-                </p>
-            )}
-        </div>
-    );
+        {task.description && (
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            {task.description}
+          </Typography>
+        )}
+
+        <Stack
+          direction="row"
+          spacing={1}
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          {task.deadline && (
+            <Stack
+              direction="row"
+              spacing={0.5}
+              alignItems="center"
+              sx={{ color: 'text.secondary' }}
+            >
+              <EventIcon fontSize="small" sx={{ fontSize: '0.875rem' }} />
+              <Typography variant="caption" color="text.secondary">
+                {format(task.deadline, 'MMM dd, yyyy')}
+              </Typography>
+            </Stack>
+          )}
+          {!task.deadline && <Box />}
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            <Chip
+              label={task.type ?? 'Task'}
+              size="small"
+              variant="outlined"
+              sx={{ fontSize: '0.7rem', height: 20 }}
+            />
+            <Chip
+              label={task.priority.toUpperCase()}
+              size="small"
+              sx={{
+                fontSize: '0.7rem',
+                height: 20,
+                bgcolor: priorityColor[task.priority],
+                color: 'white',
+              }}
+            />
+          </Stack>
+        </Stack>
+      </CardContent>
+    </MuiCard>
+  );
 };
