@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 export const taskStatusSchema = z.enum([
-    'draft',
+    'todo',
     'in_progress',
-    'editing',
+    'review',
     'done',
 ]);
 export const taskPrioritySchema = z.enum(['low', 'medium', 'high', 'urgent']);
@@ -27,7 +27,7 @@ export const createTaskSchema = z.object({
         }),
     description: z.string().optional().nullable(),
     type: taskTypeSchema.optional().nullable(),
-    status: taskStatusSchema.optional().default('draft'),
+    status: taskStatusSchema.optional().default('todo'),
     priority: taskPrioritySchema.optional().default('medium'),
     deadline: z
         .union([z.string(), z.date()])
@@ -90,4 +90,31 @@ export const updateTaskSchema = z.object({
 
 export const taskParamsSchema = z.object({
     id: z.string().regex(/^\d+$/).transform(Number),
+});
+
+export const taskQuerySchema = z.object({
+    status: taskStatusSchema.optional(),
+    priority: taskPrioritySchema.optional(),
+    createdFrom: z
+        .string()
+        .optional()
+        .refine(
+            (date) => {
+                if (!date) return true;
+                const dateObj = new Date(date);
+                return !isNaN(dateObj.getTime());
+            },
+            { message: 'Invalid date format for createdFrom' }
+        ),
+    createdTo: z
+        .string()
+        .optional()
+        .refine(
+            (date) => {
+                if (!date) return true;
+                const dateObj = new Date(date);
+                return !isNaN(dateObj.getTime());
+            },
+            { message: 'Invalid date format for createdTo' }
+        ),
 });

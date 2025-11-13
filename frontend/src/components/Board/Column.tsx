@@ -12,9 +12,9 @@ interface ColumnProps {
 }
 
 const statusColors: Record<Status, string> = {
-    draft: 'var(--color-text-tertiary)',
+    todo: 'var(--color-status-todo)',
     in_progress: 'var(--color-status-in-progress)',
-    editing: 'var(--color-status-editing)',
+    review: 'var(--color-status-review)',
     done: 'var(--color-status-done)',
 };
 

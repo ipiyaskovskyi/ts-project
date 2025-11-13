@@ -10,9 +10,9 @@
     --color-border: #dfe1e6;
     --color-border-hover: #c1c7d0;
 
-    --color-status-draft: #97a0af;
+    --color-status-todo: #97a0af;
     --color-status-in-progress: #0052cc;
-    --color-status-editing: #ffab00;
+    --color-status-review: #ffab00;
     --color-status-done: #36b37e;
 
     --shadow-sm: 0 1px 1px rgba(9, 30, 66, 0.15);

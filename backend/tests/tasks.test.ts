@@ -39,7 +39,7 @@ describe('GET /tasks', () => {
         const task1 = await Task.create({
             title: 'Task 1',
             description: 'Description 1',
-            status: 'draft',
+            status: 'todo',
             priority: 'high',
             assigneeId: user.id,
         });
@@ -117,7 +117,7 @@ describe('GET /tasks/:id', () => {
     it('should return task without assignee when assigneeId is null', async () => {
         const task = await Task.create({
             title: 'Unassigned Task',
-            status: 'draft',
+            status: 'todo',
             priority: 'medium',
         });
 
@@ -132,7 +132,7 @@ describe('POST /tasks', () => {
     it('should return 400 when title is missing', async () => {
         const response = await request(app).post('/tasks').send({
             description: 'Some description',
-            status: 'draft',
+            status: 'todo',
             priority: 'high',
         });
         expect(response.status).toBe(400);
@@ -198,7 +198,7 @@ describe('POST /tasks', () => {
         const response = await request(app).post('/tasks').send({
             title: 'New Task',
             description: 'Task description',
-            status: 'draft',
+            status: 'todo',
             priority: 'high',
             deadline: tomorrow.toISOString(),
         });
@@ -207,7 +207,7 @@ describe('POST /tasks', () => {
         expect(response.body.id).toBeDefined();
         expect(response.body.title).toBe('New Task');
         expect(response.body.description).toBe('Task description');
-        expect(response.body.status).toBe('draft');
+        expect(response.body.status).toBe('todo');
         expect(response.body.priority).toBe('high');
         expect(response.body.assignee).toBeNull();
         expect(response.body.createdAt).toBeDefined();
@@ -245,7 +245,7 @@ describe('POST /tasks', () => {
 
         expect(response.status).toBe(201);
         expect(response.body.title).toBe('Minimal Task');
-        expect(response.body.status).toBe('draft');
+        expect(response.body.status).toBe('todo');
         expect(response.body.priority).toBe('medium');
         expect(response.body.description).toBeNull();
         expect(response.body.deadline).toBeNull();
@@ -273,7 +273,7 @@ describe('PUT /tasks/:id', () => {
     it('should return 400 when updating title to empty string', async () => {
         const task = await Task.create({
             title: 'Original Title',
-            status: 'draft',
+            status: 'todo',
             priority: 'medium',
         });
 
@@ -287,7 +287,7 @@ describe('PUT /tasks/:id', () => {
     it('should return 400 when updating with invalid status', async () => {
         const task = await Task.create({
             title: 'Test Task',
-            status: 'draft',
+            status: 'todo',
             priority: 'medium',
         });
 
@@ -301,7 +301,7 @@ describe('PUT /tasks/:id', () => {
     it('should return 400 when updating with invalid priority', async () => {
         const task = await Task.create({
             title: 'Test Task',
-            status: 'draft',
+            status: 'todo',
             priority: 'medium',
         });
 
@@ -315,7 +315,7 @@ describe('PUT /tasks/:id', () => {
     it('should return 400 when updating deadline to past date', async () => {
         const task = await Task.create({
             title: 'Test Task',
-            status: 'draft',
+            status: 'todo',
             priority: 'medium',
         });
 
@@ -332,7 +332,7 @@ describe('PUT /tasks/:id', () => {
     it('should return 400 when updating with non-existent assignee', async () => {
         const task = await Task.create({
             title: 'Test Task',
-            status: 'draft',
+            status: 'todo',
             priority: 'medium',
         });
 
@@ -347,7 +347,7 @@ describe('PUT /tasks/:id', () => {
         const task = await Task.create({
             title: 'Original Title',
             description: 'Original Description',
-            status: 'draft',
+            status: 'todo',
             priority: 'low',
         });
 
@@ -381,7 +381,7 @@ describe('PUT /tasks/:id', () => {
 
         const task = await Task.create({
             title: 'Unassigned Task',
-            status: 'draft',
+            status: 'todo',
             priority: 'medium',
         });
 
@@ -404,7 +404,7 @@ describe('PUT /tasks/:id', () => {
 
         const task = await Task.create({
             title: 'Assigned Task',
-            status: 'draft',
+            status: 'todo',
             priority: 'medium',
             assigneeId: user.id,
         });
@@ -423,7 +423,7 @@ describe('PUT /tasks/:id', () => {
 
         const task = await Task.create({
             title: 'Task with Deadline',
-            status: 'draft',
+            status: 'todo',
             priority: 'medium',
             deadline: tomorrow,
         });
@@ -440,7 +440,7 @@ describe('PUT /tasks/:id', () => {
         const task = await Task.create({
             title: 'Original Title',
             description: 'Original Description',
-            status: 'draft',
+            status: 'todo',
             priority: 'low',
         });
 
@@ -472,7 +472,7 @@ describe('DELETE /tasks/:id', () => {
     it('should delete task successfully (204)', async () => {
         const task = await Task.create({
             title: 'Task to Delete',
-            status: 'draft',
+            status: 'todo',
             priority: 'medium',
         });
 
@@ -494,7 +494,7 @@ describe('DELETE /tasks/:id', () => {
 
         const task = await Task.create({
             title: 'Assigned Task to Delete',
-            status: 'draft',
+            status: 'todo',
             priority: 'medium',
             assigneeId: user.id,
         });

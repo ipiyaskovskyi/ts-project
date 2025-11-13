@@ -4,15 +4,26 @@ import {
     createTaskSchema,
     updateTaskSchema,
     taskParamsSchema,
+    taskQuerySchema,
 } from '../validators/tasks.validator.js';
 import { User } from '../models/index.js';
 
 const tasksService = new TasksService();
 
 export class TasksController {
-    async getAllTasks(_req: Request, res: Response): Promise<void> {
+    async getAllTasks(req: Request, res: Response): Promise<void> {
         try {
-            const tasks = await tasksService.getAllTasks();
+            const queryValidation = taskQuerySchema.safeParse(req.query);
+            if (!queryValidation.success) {
+                res.status(400).json({
+                    error: 'Invalid query parameters',
+                    details: queryValidation.error.errors,
+                });
+                return;
+            }
+
+            const filters = queryValidation.data;
+            const tasks = await tasksService.getAllTasks(filters);
             res.json(tasks);
             return;
         } catch (error) {

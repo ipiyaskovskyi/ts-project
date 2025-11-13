@@ -34,9 +34,9 @@ export const Board: React.FC<BoardProps> = ({
     );
 
     const columns: { id: Status; title: string }[] = [
-        { id: 'draft', title: 'Draft' },
+        { id: 'todo', title: 'To Do' },
         { id: 'in_progress', title: 'In Progress' },
-        { id: 'editing', title: 'Editing' },
+        { id: 'review', title: 'Review' },
         { id: 'done', title: 'Done' },
     ];
 

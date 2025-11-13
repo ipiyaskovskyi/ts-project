@@ -1,5 +1,7 @@
 import { Task, User } from '../models/index.js';
 import type { Status, Priority } from '../dto/Task.js';
+import type { WhereOptions } from 'sequelize';
+import { Op } from 'sequelize';
 
 export interface CreateTaskData {
     title: string;
@@ -21,9 +23,44 @@ export interface UpdateTaskData {
     assigneeId?: number | null;
 }
 
+export interface TaskFilters {
+    status?: Status;
+    priority?: Priority;
+    createdFrom?: string;
+    createdTo?: string;
+}
+
 export class TasksService {
-    async getAllTasks() {
+    async getAllTasks(filters?: TaskFilters) {
+        const where: WhereOptions = {};
+
+        if (filters?.status) {
+            where.status = filters.status;
+        }
+
+        if (filters?.priority) {
+            where.priority = filters.priority;
+        }
+
+        if (filters?.createdFrom || filters?.createdTo) {
+            const createdAtFilter: any = {};
+            if (filters.createdFrom) {
+                const fromDate = new Date(filters.createdFrom);
+                fromDate.setHours(0, 0, 0, 0);
+                createdAtFilter[Op.gte] = fromDate;
+            }
+            if (filters.createdTo) {
+                const toDate = new Date(filters.createdTo);
+                toDate.setHours(23, 59, 59, 999);
+                createdAtFilter[Op.lte] = toDate;
+            }
+            if (Object.keys(createdAtFilter).length > 0) {
+                where.createdAt = createdAtFilter;
+            }
+        }
+
         return await Task.findAll({
+            where: Object.keys(where).length > 0 ? where : undefined,
             include: [
                 {
                     model: User,
@@ -52,7 +89,7 @@ export class TasksService {
             title: data.title,
             description: data.description || null,
             type: data.type || null,
-            status: data.status || 'draft',
+            status: data.status || 'todo',
             priority: data.priority || 'medium',
             deadline: data.deadline || null,
             assigneeId: data.assigneeId || null,

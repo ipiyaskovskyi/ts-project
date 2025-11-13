@@ -8,14 +8,14 @@ export const TASK_TYPES: TaskType[] = [
     'Epic',
 ];
 
-export const STATUSES: Status[] = ['draft', 'in_progress', 'editing', 'done'];
+export const STATUSES: Status[] = ['todo', 'in_progress', 'review', 'done'];
 
 export const PRIORITIES: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
 export const STATUS_LABELS: Record<Status, string> = {
-    draft: 'Draft',
+    todo: 'To Do',
     in_progress: 'In Progress',
-    editing: 'Editing',
+    review: 'Review',
     done: 'Done',
 };
 

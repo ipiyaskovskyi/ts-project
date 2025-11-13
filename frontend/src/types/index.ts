@@ -1,4 +1,4 @@
-export type Status = 'draft' | 'in_progress' | 'editing' | 'done';
+export type Status = 'todo' | 'in_progress' | 'review' | 'done';
 export type Priority = 'low' | 'medium' | 'high' | 'urgent';
 export type TaskType = 'Task' | 'Subtask' | 'Bug' | 'Story' | 'Epic';
 

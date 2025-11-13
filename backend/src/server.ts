@@ -11,7 +11,9 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
-app.use(morgan('combined'));
+if (process.env.NODE_ENV !== 'production') {
+    app.use(morgan('combined'));
+}
 
 function registerProcessHandlers() {
     const logAndExit = (signal: string) => {
@@ -57,9 +59,9 @@ async function ensurePostgresEnums() {
     };
 
     await Promise.all([
-        addEnumValue('enum_tasks_status', 'draft'),
+        addEnumValue('enum_tasks_status', 'todo'),
         addEnumValue('enum_tasks_status', 'in_progress'),
-        addEnumValue('enum_tasks_status', 'editing'),
+        addEnumValue('enum_tasks_status', 'review'),
         addEnumValue('enum_tasks_priority', 'urgent'),
     ]);
 }

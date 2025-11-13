@@ -255,9 +255,9 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                                 }}
                             >
                                 <option value="">All Statuses</option>
-                                <option value="draft">Draft</option>
+                                <option value="todo">To Do</option>
                                 <option value="in_progress">In Progress</option>
-                                <option value="editing">Editing</option>
+                                <option value="review">Review</option>
                                 <option value="done">Done</option>
                             </select>
                         </div>

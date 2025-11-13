@@ -15,6 +15,7 @@ import {
     STATUS_LABELS,
     PRIORITY_LABELS,
 } from './constants';
+import { taskFormSchema } from './taskFormSchema';
 
 export interface TaskFormValues {
     title: string;
@@ -39,7 +40,7 @@ const DEFAULT_VALUES: TaskFormValues = {
     title: '',
     description: '',
     type: 'Task',
-    status: 'draft',
+    status: 'todo',
     priority: 'medium',
     deadline: '',
 };
@@ -67,20 +68,71 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState<
+        Partial<Record<keyof TaskFormValues, string>>
+    >({});
+    const [touchedFields, setTouchedFields] = useState<
+        Partial<Record<keyof TaskFormValues, boolean>>
+    >({});
 
     const updateField = useCallback(
         <K extends keyof TaskFormValues>(
             field: K,
             value: TaskFormValues[K]
         ) => {
-            setFormState((prev) => ({ ...prev, [field]: value }));
+            setFormState((prev) => {
+                const newState = { ...prev, [field]: value };
+                if (touchedFields[field]) {
+                    const validation = taskFormSchema.safeParse(newState);
+                    if (!validation.success) {
+                        const fieldError = validation.error.errors.find(
+                            (e) => e.path[0] === field
+                        );
+                        setFieldErrors((prev) => ({
+                            ...prev,
+                            [field]: fieldError?.message,
+                        }));
+                    } else {
+                        setFieldErrors((prev) => {
+                            const newErrors = { ...prev };
+                            delete newErrors[field];
+                            return newErrors;
+                        });
+                    }
+                }
+                return newState;
+            });
         },
-        []
+        [touchedFields]
+    );
+
+    const handleFieldBlur = useCallback(
+        (field: keyof TaskFormValues) => {
+            setTouchedFields((prev) => ({ ...prev, [field]: true }));
+            const validation = taskFormSchema.safeParse(formState);
+            if (!validation.success) {
+                const fieldError = validation.error.errors.find(
+                    (e) => e.path[0] === field
+                );
+                setFieldErrors((prev) => ({
+                    ...prev,
+                    [field]: fieldError?.message,
+                }));
+            } else {
+                setFieldErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors[field];
+                    return newErrors;
+                });
+            }
+        },
+        [formState]
     );
 
     const isFormValid = useMemo(() => {
-        return formState.title.trim().length > 0;
-    }, [formState.title]);
+        const validation = taskFormSchema.safeParse(formState);
+        return validation.success;
+    }, [formState]);
 
     const hasFormChanged = useMemo(() => {
         if (mode === 'create') {
@@ -108,6 +160,8 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
         setError('');
         setIsSubmitting(false);
         setIsDeleting(false);
+        setFieldErrors({});
+        setTouchedFields({});
     }, [mergedInitialValues]);
 
     const handleClose = useCallback(() => {
@@ -119,8 +173,32 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
         event.preventDefault();
         setError('');
 
-        if (!formState.title.trim()) {
-            setError('Please enter task title');
+        // Mark all fields as touched
+        const allFields: (keyof TaskFormValues)[] = [
+            'title',
+            'description',
+            'type',
+            'status',
+            'priority',
+            'deadline',
+        ];
+        setTouchedFields(
+            allFields.reduce(
+                (acc, field) => ({ ...acc, [field]: true }),
+                {} as Partial<Record<keyof TaskFormValues, boolean>>
+            )
+        );
+
+        const validation = taskFormSchema.safeParse(formState);
+        if (!validation.success) {
+            const errors: Partial<Record<keyof TaskFormValues, string>> = {};
+            validation.error.errors.forEach((err) => {
+                const field = err.path[0] as keyof TaskFormValues;
+                if (field) {
+                    errors[field] = err.message;
+                }
+            });
+            setFieldErrors(errors);
             return;
         }
 
@@ -221,23 +299,30 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
             <form onSubmit={handleSubmit}>
                 {error && <ErrorMessage message={error} />}
 
-                <FormField label="Task Title" id="task-title" required>
+                <FormField
+                    label="Task Title"
+                    id="task-title"
+                    required
+                    error={fieldErrors.title}
+                >
                     <Input
                         id="task-title"
                         type="text"
                         value={formState.title}
                         onChange={(e) => updateField('title', e.target.value)}
+                        onBlur={() => handleFieldBlur('title')}
                         placeholder="Enter task title"
                     />
                 </FormField>
 
-                <FormField label="Type" id="task-type">
+                <FormField label="Type" id="task-type" error={fieldErrors.type}>
                     <Select
                         id="task-type"
                         value={formState.type}
                         onChange={(e) =>
                             updateField('type', e.target.value as TaskType)
                         }
+                        onBlur={() => handleFieldBlur('type')}
                     >
                         {TASK_TYPES.map((type) => (
                             <option key={type} value={type}>
@@ -247,13 +332,18 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
                     </Select>
                 </FormField>
 
-                <FormField label="Description" id="task-description">
+                <FormField
+                    label="Description"
+                    id="task-description"
+                    error={fieldErrors.description}
+                >
                     <Textarea
                         id="task-description"
                         value={formState.description}
                         onChange={(e) =>
                             updateField('description', e.target.value)
                         }
+                        onBlur={() => handleFieldBlur('description')}
                         placeholder="Enter task description"
                         rows={4}
                     />
@@ -267,13 +357,18 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
                         marginBottom: 'var(--spacing-md)',
                     }}
                 >
-                    <FormField label="Status" id="task-status">
+                    <FormField
+                        label="Status"
+                        id="task-status"
+                        error={fieldErrors.status}
+                    >
                         <Select
                             id="task-status"
                             value={formState.status}
                             onChange={(e) =>
                                 updateField('status', e.target.value as Status)
                             }
+                            onBlur={() => handleFieldBlur('status')}
                         >
                             {STATUSES.map((status) => (
                                 <option key={status} value={status}>
@@ -283,7 +378,11 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
                         </Select>
                     </FormField>
 
-                    <FormField label="Priority" id="task-priority">
+                    <FormField
+                        label="Priority"
+                        id="task-priority"
+                        error={fieldErrors.priority}
+                    >
                         <Select
                             id="task-priority"
                             value={formState.priority}
@@ -293,6 +392,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
                                     e.target.value as Priority
                                 )
                             }
+                            onBlur={() => handleFieldBlur('priority')}
                         >
                             {PRIORITIES.map((priority) => (
                                 <option key={priority} value={priority}>
@@ -303,7 +403,11 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
                     </FormField>
                 </div>
 
-                <FormField label="Deadline" id="task-deadline">
+                <FormField
+                    label="Deadline"
+                    id="task-deadline"
+                    error={fieldErrors.deadline}
+                >
                     <Input
                         id="task-deadline"
                         type="date"
@@ -311,6 +415,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
                         onChange={(e) =>
                             updateField('deadline', e.target.value)
                         }
+                        onBlur={() => handleFieldBlur('deadline')}
                     />
                 </FormField>
 

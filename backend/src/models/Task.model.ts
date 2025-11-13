@@ -75,9 +75,9 @@ export class Task
     declare type?: string | null;
 
     @AllowNull(false)
-    @Default('draft')
+    @Default('todo')
     @Column({
-        type: DataType.ENUM('draft', 'in_progress', 'editing', 'done'),
+        type: DataType.ENUM('todo', 'in_progress', 'review', 'done'),
     })
     declare status: Status;
 

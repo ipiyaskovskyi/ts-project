@@ -78,7 +78,7 @@ describe('CreateTaskModal', () => {
 
             expect(titleInput.value).toBe('');
             expect(typeSelect.value).toBe('Task');
-            expect(statusSelect.value).toBe('draft');
+            expect(statusSelect.value).toBe('todo');
             expect(prioritySelect.value).toBe('medium');
         });
 

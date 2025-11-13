@@ -17,12 +17,12 @@ export const BoardPage: React.FC = () => {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [type, setType] = useState<TaskType>('Task');
-    const [status, setStatus] = useState<Status>('draft');
+    const [status, setStatus] = useState<Status>('todo');
     const [priority, setPriority] = useState<Priority>('medium');
     const [deadline, setDeadline] = useState('');
 
     const statusOptions: Status[] = useMemo(
-        () => ['draft', 'in_progress', 'editing', 'done'],
+        () => ['todo', 'in_progress', 'review', 'done'],
         []
     );
     const priorityOptions: Priority[] = useMemo(
