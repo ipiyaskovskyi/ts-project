@@ -1,0 +1,286 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Header } from "./components/Layout/Header";
+import { KanbanBoard } from "./components/Kanban/KanbanBoard";
+import { Toolbar } from "./components/Kanban/Toolbar";
+import {
+  CreateTaskModal,
+  type TaskFormValues,
+} from "./components/Kanban/CreateTaskModal";
+import type { KanbanTask, KanbanStatus } from "./types";
+import {
+  fetchTasks,
+  createTask,
+  updateTask,
+  deleteTask,
+  type CreateTaskPayload,
+} from "./api/tasks";
+import "./App.css";
+
+interface FilterState {
+  status: KanbanStatus | "";
+  priority: string;
+  createdFrom: string;
+  createdTo: string;
+}
+
+function App() {
+  const [kanbanTasks, setKanbanTasks] = useState<KanbanTask[]>([]);
+  const [filters, setFilters] = useState<FilterState>({
+    status: "",
+    priority: "",
+    createdFrom: "",
+    createdTo: "",
+  });
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<KanbanTask | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const previousTasksRef = useRef<KanbanTask[] | null>(null);
+
+  useEffect(() => {
+    const loadTasks = async () => {
+      try {
+        setIsLoading(true);
+        const tasks = await fetchTasks();
+        setKanbanTasks(tasks);
+        setError(null);
+      } catch (err) {
+        console.error(err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load tasks from API",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTasks();
+  }, []);
+
+  const handleTaskMove = (taskId: number, newStatus: KanbanStatus) => {
+    setKanbanTasks((prevTasks) => {
+      previousTasksRef.current = prevTasks;
+      return prevTasks.map((task) =>
+        task.id === taskId ? { ...task, status: newStatus } : task,
+      );
+    });
+
+    updateTask(taskId, { status: newStatus })
+      .then(() => {
+        previousTasksRef.current = null;
+        setError(null);
+      })
+      .catch((err) => {
+        console.error(err);
+        if (previousTasksRef.current) {
+          setKanbanTasks(previousTasksRef.current);
+        }
+        setError(
+          err instanceof Error ? err.message : "Failed to update task status",
+        );
+      });
+  };
+
+  const handleCreateTask = () => {
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCreateTaskSubmit = async (data: TaskFormValues) => {
+    const payload: CreateTaskPayload = {
+      title: data.title,
+      description: data.description || undefined,
+      status: data.status,
+      priority: data.priority,
+      deadline: data.deadline || undefined,
+    };
+
+    try {
+      const newTask = await createTask(payload);
+      setKanbanTasks((prevTasks) => [...prevTasks, newTask]);
+      setIsCreateModalOpen(false);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      const message =
+        err instanceof Error ? err.message : "Failed to create task";
+      setError(message);
+      throw err instanceof Error ? err : new Error(message);
+    }
+  };
+
+  const handleEditTaskSubmit = async (data: TaskFormValues) => {
+    if (!editingTask) {
+      return;
+    }
+
+    try {
+      const updatedTask = await updateTask(editingTask.id, {
+        title: data.title,
+        description: data.description || undefined,
+        status: data.status,
+        priority: data.priority,
+        deadline: data.deadline || undefined,
+      });
+
+      setKanbanTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === editingTask.id ? updatedTask : task,
+        ),
+      );
+      setEditingTask(null);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      const message =
+        err instanceof Error ? err.message : "Failed to update the task";
+      setError(message);
+      throw err instanceof Error ? err : new Error(message);
+    }
+  };
+
+  const handleDeleteTask = async () => {
+    if (!editingTask) {
+      return;
+    }
+
+    try {
+      await deleteTask(editingTask.id);
+      setKanbanTasks((prevTasks) =>
+        prevTasks.filter((task) => task.id !== editingTask.id),
+      );
+      setEditingTask(null);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      const message =
+        err instanceof Error ? err.message : "Failed to delete the task";
+      setError(message);
+      throw err instanceof Error ? err : new Error(message);
+    }
+  };
+
+  const handleFilterChange = (newFilters: FilterState) => {
+    setFilters(newFilters);
+  };
+
+  const displayedTasks = useMemo(() => {
+    return kanbanTasks.filter((task) => {
+      if (filters.status && task.status !== filters.status) {
+        return false;
+      }
+
+      if (filters.priority && task.priority !== filters.priority) {
+        return false;
+      }
+
+      if (filters.createdFrom) {
+        const fromDate = new Date(filters.createdFrom);
+        fromDate.setHours(0, 0, 0, 0);
+        const taskDate = new Date(task.createdAt);
+        taskDate.setHours(0, 0, 0, 0);
+        if (taskDate < fromDate) {
+          return false;
+        }
+      }
+
+      if (filters.createdTo) {
+        const toDate = new Date(filters.createdTo);
+        toDate.setHours(23, 59, 59, 999);
+        const taskDate = new Date(task.createdAt);
+        taskDate.setHours(0, 0, 0, 0);
+        if (taskDate > toDate) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [kanbanTasks, filters]);
+
+  return (
+    <div className="app-container">
+      <Header />
+      <div className="app-content">
+        <main className="main-content">
+          <Toolbar
+            onCreateTask={handleCreateTask}
+            onFilterChange={handleFilterChange}
+          />
+          <div style={{ padding: "var(--spacing-lg)" }}>
+            {error && (
+              <div
+                style={{
+                  marginBottom: "var(--spacing-md)",
+                  padding: "var(--spacing-sm) var(--spacing-md)",
+                  borderRadius: "var(--radius-md)",
+                  border: "1px solid #facc15",
+                  backgroundColor: "#fef9c3",
+                  color: "#854d0e",
+                  fontSize: "0.9rem",
+                }}
+              >
+                {error}
+              </div>
+            )}
+            {isLoading ? (
+              <div
+                style={{
+                  padding: "var(--spacing-lg)",
+                  textAlign: "center",
+                  color: "var(--color-text-secondary)",
+                }}
+              >
+                Loading tasks...
+              </div>
+            ) : (
+              <KanbanBoard
+                tasks={displayedTasks}
+                onTaskMove={handleTaskMove}
+                onTaskEdit={setEditingTask}
+              />
+            )}
+          </div>
+        </main>
+      </div>
+
+      <CreateTaskModal
+        isOpen={isCreateModalOpen}
+        mode="create"
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateTaskSubmit}
+      />
+
+      <CreateTaskModal
+        isOpen={Boolean(editingTask)}
+        mode="edit"
+        initialValues={
+          editingTask ? mapTaskToFormValues(editingTask) : undefined
+        }
+        onClose={() => setEditingTask(null)}
+        onSubmit={handleEditTaskSubmit}
+        onDelete={handleDeleteTask}
+        ticketId={editingTask?.id ?? null}
+      />
+    </div>
+  );
+}
+
+export default App;
+
+function mapTaskToFormValues(task: KanbanTask): TaskFormValues {
+  return {
+    title: task.title,
+    description: task.description ?? "",
+    type: task.type ?? "Task",
+    status: task.status,
+    priority: task.priority,
+    deadline: task.deadline ? formatDateInput(task.deadline) : "",
+  };
+}
+
+function formatDateInput(date: Date): string {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
