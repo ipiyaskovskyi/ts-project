@@ -2,11 +2,11 @@ import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
-interface ProtectedRouteProps {
+interface GuestRouteProps {
   children: React.ReactNode;
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+export const GuestRoute: React.FC<GuestRouteProps> = ({ children }) => {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -21,14 +21,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           color: "var(--color-text-secondary)",
         }}
       >
-        Завантаження...
+        Loading...
       </div>
     );
   }
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
+  if (user) {
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
 };
+

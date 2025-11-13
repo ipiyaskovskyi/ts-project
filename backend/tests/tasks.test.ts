@@ -30,8 +30,10 @@ describe("GET /tasks", () => {
 
   it("should return all tasks with assignee information", async () => {
     const user = await User.create({
-      name: "Test User",
+      firstname: "Test",
+      lastname: "User",
       email: "test@example.com",
+      password: "testpassword",
     });
 
     const task1 = await Task.create({
@@ -58,7 +60,8 @@ describe("GET /tasks", () => {
     expect(task1Response.title).toBe("Task 1");
     expect(task1Response.assignee).toBeDefined();
     expect(task1Response.assignee.id).toBe(user.id);
-    expect(task1Response.assignee.name).toBe("Test User");
+    expect(task1Response.assignee.firstname).toBe("Test");
+    expect(task1Response.assignee.lastname).toBe("User");
 
     const task2Response = response.body.find((t: any) => t.id === task2.id);
     expect(task2Response).toBeDefined();
@@ -82,8 +85,10 @@ describe("GET /tasks/:id", () => {
 
   it("should return task with assignee details (200)", async () => {
     const user = await User.create({
-      name: "John Doe",
+      firstname: "John",
+      lastname: "Doe",
       email: "john@example.com",
+      password: "testpassword",
     });
 
     const task = await Task.create({
@@ -104,7 +109,8 @@ describe("GET /tasks/:id", () => {
     expect(response.body.priority).toBe("low");
     expect(response.body.assignee).toBeDefined();
     expect(response.body.assignee.id).toBe(user.id);
-    expect(response.body.assignee.name).toBe("John Doe");
+    expect(response.body.assignee.firstname).toBe("John");
+    expect(response.body.assignee.lastname).toBe("Doe");
     expect(response.body.assignee.email).toBe("john@example.com");
   });
 
@@ -209,8 +215,10 @@ describe("POST /tasks", () => {
 
   it("should create task with assignee successfully (201)", async () => {
     const user = await User.create({
-      name: "Jane Doe",
+      firstname: "Jane",
+      lastname: "Doe",
       email: "jane@example.com",
+      password: "testpassword",
     });
 
     const response = await request(app).post("/tasks").send({
@@ -226,7 +234,8 @@ describe("POST /tasks", () => {
     expect(response.body.title).toBe("Assigned Task");
     expect(response.body.assignee).toBeDefined();
     expect(response.body.assignee.id).toBe(user.id);
-    expect(response.body.assignee.name).toBe("Jane Doe");
+    expect(response.body.assignee.firstname).toBe("Jane");
+    expect(response.body.assignee.lastname).toBe("Doe");
   });
 
   it("should use default values when optional fields are not provided", async () => {
@@ -364,8 +373,10 @@ describe("PUT /tasks/:id", () => {
 
   it("should update task with assignee successfully (200)", async () => {
     const user = await User.create({
-      name: "Test User",
+      firstname: "Test",
+      lastname: "User",
       email: "test@example.com",
+      password: "testpassword",
     });
 
     const task = await Task.create({
@@ -385,8 +396,10 @@ describe("PUT /tasks/:id", () => {
 
   it("should remove assignee when assigneeId is set to null (200)", async () => {
     const user = await User.create({
-      name: "Test User",
+      firstname: "Test",
+      lastname: "User",
       email: "test@example.com",
+      password: "testpassword",
     });
 
     const task = await Task.create({
@@ -473,8 +486,10 @@ describe("DELETE /tasks/:id", () => {
 
   it("should delete task with assignee successfully (204)", async () => {
     const user = await User.create({
-      name: "Test User",
+      firstname: "Test",
+      lastname: "User",
       email: "test@example.com",
+      password: "testpassword",
     });
 
     const task = await Task.create({

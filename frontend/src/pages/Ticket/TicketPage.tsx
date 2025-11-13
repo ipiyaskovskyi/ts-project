@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { deleteTask, fetchTaskById, updateTask } from "../../api/tasks";
@@ -104,7 +103,6 @@ export const TicketPage: React.FC = () => {
         status,
         priority,
         deadline: deadline ? new Date(deadline).toISOString() : undefined,
-        type,
       });
       setTask(updated);
       setSuccess("Changes saved successfully.");

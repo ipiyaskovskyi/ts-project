@@ -14,8 +14,10 @@ import { Task } from "./Task.model.js";
 
 export interface UserAttributes {
   id: number;
-  name: string;
+  firstname: string;
+  lastname: string;
   email: string;
+  password: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -42,7 +44,13 @@ export class User
   @Column({
     type: DataType.STRING,
   })
-  declare name: string;
+  declare firstname: string;
+
+  @AllowNull(false)
+  @Column({
+    type: DataType.STRING,
+  })
+  declare lastname: string;
 
   @AllowNull(false)
   @Unique
@@ -50,6 +58,12 @@ export class User
     type: DataType.STRING,
   })
   declare email: string;
+
+  @AllowNull(false)
+  @Column({
+    type: DataType.STRING,
+  })
+  declare password: string;
 
   @CreatedAt
   @Column({ field: "createdAt", type: DataType.DATE })

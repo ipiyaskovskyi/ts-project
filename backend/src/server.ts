@@ -2,6 +2,7 @@ import "reflect-metadata";
 import express, { Router, type Request, type Response } from "express";
 import cors from "cors";
 import { sequelize, Task, User } from "./models/index.js";
+import authRouter from "./routes/auth.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -67,12 +68,6 @@ async function initializeDatabase() {
     await sequelize.authenticate();
     await sequelize.sync({ force: false });
     await ensurePostgresEnums();
-    await sequelize.query(
-      "UPDATE tasks SET status = 'draft' WHERE status = 'todo'",
-    );
-    await sequelize.query(
-      "UPDATE tasks SET status = 'in_progress' WHERE status = 'in-progress'",
-    );
     console.log("Database connected and synced");
   } catch (error) {
     console.error("Unable to connect to the database:", error);
@@ -87,14 +82,16 @@ tasksRouter.get("/tasks", async (_req: Request, res: Response) => {
         {
           model: User,
           as: "assignee",
-          attributes: ["id", "name", "email"],
+          attributes: ["id", "firstname", "lastname", "email"],
         },
       ],
     });
     res.json(tasks);
+    return;
   } catch (error) {
     console.error("Error fetching tasks:", error);
     res.status(500).json({ error: "Internal server error" });
+    return;
   }
 });
 
@@ -110,7 +107,7 @@ tasksRouter.get("/tasks/:id", async (req: Request, res: Response) => {
         {
           model: User,
           as: "assignee",
-          attributes: ["id", "name", "email"],
+          attributes: ["id", "firstname", "lastname", "email"],
         },
       ],
     });
@@ -120,9 +117,11 @@ tasksRouter.get("/tasks/:id", async (req: Request, res: Response) => {
     }
 
     res.json(task);
+    return;
   } catch (error) {
     console.error("Error fetching task:", error);
     res.status(500).json({ error: "Internal server error" });
+    return;
   }
 });
 
@@ -183,15 +182,17 @@ tasksRouter.post("/tasks", async (req: Request, res: Response) => {
         {
           model: User,
           as: "assignee",
-          attributes: ["id", "name", "email"],
+          attributes: ["id", "firstname", "lastname", "email"],
         },
       ],
     });
 
     res.status(201).json(taskWithAssignee);
+    return;
   } catch (error) {
     console.error("Error creating task:", error);
     res.status(500).json({ error: "Internal server error" });
+    return;
   }
 });
 
@@ -277,15 +278,17 @@ tasksRouter.put("/tasks/:id", async (req: Request, res: Response) => {
         {
           model: User,
           as: "assignee",
-          attributes: ["id", "name", "email"],
+          attributes: ["id", "firstname", "lastname", "email"],
         },
       ],
     });
 
     res.json(taskWithAssignee);
+    return;
   } catch (error) {
     console.error("Error updating task:", error);
     res.status(500).json({ error: "Internal server error" });
+    return;
   }
 });
 
@@ -303,14 +306,17 @@ tasksRouter.delete("/tasks/:id", async (req: Request, res: Response) => {
 
     await task.destroy();
     res.status(204).send();
+    return;
   } catch (error) {
     console.error("Error deleting task:", error);
     res.status(500).json({ error: "Internal server error" });
+    return;
   }
 });
 
 app.use("/", tasksRouter);
 app.use("/api", tasksRouter);
+app.use("/api/auth", authRouter);
 
 async function startServer() {
   await initializeDatabase();

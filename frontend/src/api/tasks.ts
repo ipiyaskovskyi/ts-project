@@ -16,7 +16,8 @@ type ApiTask = {
 type ApiTaskResponse = ApiTask & {
   assignee?: {
     id: number;
-    name: string;
+    firstname: string;
+    lastname: string;
     email: string;
   } | null;
 };
@@ -44,7 +45,6 @@ async function handleResponse<T>(response: Response): Promise<T> {
         message = errorBody.error;
       }
     } catch (error) {
-      // ignore JSON parse errors
     }
     throw new Error(message);
   }
@@ -146,7 +146,6 @@ export async function deleteTask(id: number): Promise<void> {
         message = errorBody.error;
       }
     } catch (error) {
-      // ignore parse errors
     }
     throw new Error(message);
   }

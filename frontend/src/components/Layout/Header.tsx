@@ -70,7 +70,7 @@ export const Header: React.FC = () => {
                 color: "var(--color-text-primary)",
               }}
             >
-              {user.name}
+              {user.firstname} {user.lastname}
             </span>
             <span
               style={{

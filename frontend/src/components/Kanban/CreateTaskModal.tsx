@@ -65,6 +65,35 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const isFormValid = useMemo(() => {
+    return title.trim().length > 0;
+  }, [title]);
+
+  const hasFormChanged = useMemo(() => {
+    if (mode === "create") {
+      return title.trim() !== "" || description.trim() !== "";
+    }
+    return (
+      title.trim() !== mergedInitialValues.title ||
+      description.trim() !== (mergedInitialValues.description || "") ||
+      type !== mergedInitialValues.type ||
+      status !== mergedInitialValues.status ||
+      priority !== mergedInitialValues.priority ||
+      deadline !== (mergedInitialValues.deadline || "")
+    );
+  }, [
+    title,
+    description,
+    type,
+    status,
+    priority,
+    deadline,
+    mode,
+    mergedInitialValues,
+  ]);
+
+  const isSubmitDisabled = !isFormValid || !hasFormChanged || isSubmitting || isDeleting;
+
   const resetFormState = useCallback(() => {
     setTitle(mergedInitialValues.title);
     setDescription(mergedInitialValues.description);
@@ -644,7 +673,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
                   e.currentTarget.style.backgroundColor =
                     "var(--color-status-in-progress)";
                 }}
-                disabled={isSubmitting || isDeleting}
+                disabled={isSubmitDisabled}
               >
                 {submitLabel}
               </button>

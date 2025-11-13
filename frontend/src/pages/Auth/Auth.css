@@ -81,6 +81,16 @@
   cursor: not-allowed;
 }
 
+.auth-field input:invalid:not(:focus):not(:placeholder-shown) {
+  border-color: #dc2626;
+}
+
+.auth-field-error {
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin-top: calc(var(--spacing-xs) * -1);
+}
+
 .auth-button {
   padding: var(--spacing-md);
   background-color: var(--color-status-in-progress);
@@ -121,3 +131,4 @@
   color: #2563eb;
   text-decoration: underline;
 }
+
