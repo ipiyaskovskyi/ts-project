@@ -423,7 +423,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
           />
         </DialogContent>
 
-        <DialogActions>
+        <DialogActions sx={{ pl: 3, pr: 3, pb: 3}}>
           {showDeleteButton && (
             <Button
               color="error"
