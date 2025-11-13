@@ -1,373 +1,178 @@
-import React, { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
-import "./Auth.css";
-
-interface FieldErrors {
-  firstname?: string;
-  lastname?: string;
-  email?: string;
-  password?: string;
-  confirmPassword?: string;
-}
-
-interface TouchedFields {
-  firstname?: boolean;
-  lastname?: boolean;
-  email?: boolean;
-  password?: boolean;
-  confirmPassword?: boolean;
-}
-
-const validateEmail = (email: string): string | undefined => {
-  if (!email.trim()) {
-    return "Email is required";
-  }
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return "Please enter a valid email address";
-  }
-  return undefined;
-};
-
-const validatePassword = (password: string): string | undefined => {
-  if (!password) {
-    return "Password is required";
-  }
-  if (password.length < 6) {
-    return "Password must be at least 6 characters";
-  }
-  return undefined;
-};
-
-const validateName = (name: string, fieldName: string): string | undefined => {
-  if (!name.trim()) {
-    return `${fieldName} is required`;
-  }
-  if (name.trim().length < 2) {
-    return `${fieldName} must be at least 2 characters`;
-  }
-  return undefined;
-};
-
-const validateConfirmPassword = (
-  password: string,
-  confirmPassword: string
-): string | undefined => {
-  if (!confirmPassword) {
-    return "Please confirm your password";
-  }
-  if (password !== confirmPassword) {
-    return "Passwords do not match";
-  }
-  return undefined;
-};
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { useFormValidation } from '../../hooks/useFormValidation';
+import {
+    validateEmail,
+    validatePassword,
+    validateName,
+    validateConfirmPassword,
+} from '../../utils/validation';
+import { ValidatedField } from './ValidatedField';
+import { Button } from '../common/Button';
+import { ErrorMessage } from '../common/ErrorMessage';
+import './Auth.css';
 
 interface RegisterFormProps {
-  onSubmit: (
-    email: string,
-    password: string,
-    firstname: string,
-    lastname: string
-  ) => Promise<void>;
-  isLoading?: boolean;
-  error?: string;
+    onSubmit: (
+        email: string,
+        password: string,
+        firstname: string,
+        lastname: string
+    ) => Promise<void>;
+    isLoading?: boolean;
+    error?: string;
 }
 
 export const RegisterForm: React.FC<RegisterFormProps> = ({
-  onSubmit,
-  isLoading = false,
-  error,
+    onSubmit,
+    isLoading = false,
+    error,
 }) => {
-  const [firstname, setFirstname] = useState("");
-  const [lastname, setLastname] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [touched, setTouched] = useState<TouchedFields>({});
+    const { values, errors, touched, setValue, setTouched, validateAll } =
+        useFormValidation(
+            {
+                firstname: '',
+                lastname: '',
+                email: '',
+                password: '',
+                confirmPassword: '',
+            },
+            {
+                firstname: (value) => validateName(value, 'Firstname'),
+                lastname: (value) => validateName(value, 'Lastname'),
+                email: (value) => validateEmail(value),
+                password: (value) => validatePassword(value, 6),
+                confirmPassword: (value, allValues) => {
+                    if (!allValues) return 'Please confirm your password';
+                    return validateConfirmPassword(allValues.password, value);
+                },
+            }
+        );
 
-  const firstnameError = useMemo(() => {
-    if (!touched.firstname) return undefined;
-    return validateName(firstname, "Firstname");
-  }, [firstname, touched.firstname]);
+    const isFormValid =
+        !errors.firstname &&
+        !errors.lastname &&
+        !errors.email &&
+        !errors.password &&
+        !errors.confirmPassword &&
+        values.firstname.trim() !== '' &&
+        values.lastname.trim() !== '' &&
+        values.email.trim() !== '' &&
+        values.password !== '' &&
+        values.confirmPassword !== '';
 
-  const lastnameError = useMemo(() => {
-    if (!touched.lastname) return undefined;
-    return validateName(lastname, "Lastname");
-  }, [lastname, touched.lastname]);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
 
-  const emailError = useMemo(() => {
-    if (!touched.email) return undefined;
-    return validateEmail(email);
-  }, [email, touched.email]);
+        if (!validateAll()) {
+            return;
+        }
 
-  const passwordError = useMemo(() => {
-    if (!touched.password) return undefined;
-    return validatePassword(password);
-  }, [password, touched.password]);
+        await onSubmit(
+            values.email,
+            values.password,
+            values.firstname,
+            values.lastname
+        );
+    };
 
-  const confirmPasswordError = useMemo(() => {
-    if (!touched.confirmPassword) return undefined;
-    return validateConfirmPassword(password, confirmPassword);
-  }, [password, confirmPassword, touched.confirmPassword]);
+    const handlePasswordChange = (value: string) => {
+        setValue('password', value);
+        if (touched.confirmPassword) {
+            setTouched('confirmPassword');
+        }
+    };
 
-  const isFormValid = useMemo(() => {
     return (
-      !firstnameError &&
-      !lastnameError &&
-      !emailError &&
-      !passwordError &&
-      !confirmPasswordError &&
-      firstname.trim() !== "" &&
-      lastname.trim() !== "" &&
-      email.trim() !== "" &&
-      password !== "" &&
-      confirmPassword !== ""
-    );
-  }, [
-    firstnameError,
-    lastnameError,
-    emailError,
-    passwordError,
-    confirmPasswordError,
-    firstname,
-    lastname,
-    email,
-    password,
-    confirmPassword,
-  ]);
+        <div className="auth-container">
+            <div className="auth-card">
+                <h1 className="auth-title">Sign Up</h1>
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setTouched({
-      firstname: true,
-      lastname: true,
-      email: true,
-      password: true,
-      confirmPassword: true,
-    });
+                {error && <ErrorMessage message={error} />}
 
-    const firstnameErr = validateName(firstname, "Firstname");
-    const lastnameErr = validateName(lastname, "Lastname");
-    const emailErr = validateEmail(email);
-    const passwordErr = validatePassword(password);
-    const confirmPasswordErr = validateConfirmPassword(
-      password,
-      confirmPassword
-    );
+                <form onSubmit={handleSubmit} className="auth-form" role="form">
+                    <ValidatedField
+                        id="firstname"
+                        label="Firstname"
+                        type="text"
+                        value={values.firstname}
+                        onChange={(value) => setValue('firstname', value)}
+                        onBlur={() => setTouched('firstname')}
+                        placeholder="Your firstname"
+                        disabled={isLoading}
+                        error={errors.firstname}
+                        touched={!!touched.firstname}
+                    />
 
-    if (
-      firstnameErr ||
-      lastnameErr ||
-      emailErr ||
-      passwordErr ||
-      confirmPasswordErr
-    ) {
-      setFieldErrors({
-        firstname: firstnameErr,
-        lastname: lastnameErr,
-        email: emailErr,
-        password: passwordErr,
-        confirmPassword: confirmPasswordErr,
-      });
-      return;
-    }
+                    <ValidatedField
+                        id="lastname"
+                        label="Lastname"
+                        type="text"
+                        value={values.lastname}
+                        onChange={(value) => setValue('lastname', value)}
+                        onBlur={() => setTouched('lastname')}
+                        placeholder="Your lastname"
+                        disabled={isLoading}
+                        error={errors.lastname}
+                        touched={!!touched.lastname}
+                    />
 
-    setFieldErrors({});
-    await onSubmit(email, password, firstname, lastname);
-  };
+                    <ValidatedField
+                        id="email"
+                        label="Email"
+                        type="email"
+                        value={values.email}
+                        onChange={(value) => setValue('email', value)}
+                        onBlur={() => setTouched('email')}
+                        placeholder="your@email.com"
+                        disabled={isLoading}
+                        error={errors.email}
+                        touched={!!touched.email}
+                    />
 
-  return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h1 className="auth-title">Sign Up</h1>
+                    <ValidatedField
+                        id="password"
+                        label="Password"
+                        type="password"
+                        value={values.password}
+                        onChange={handlePasswordChange}
+                        onBlur={() => setTouched('password')}
+                        placeholder="••••••••"
+                        disabled={isLoading}
+                        error={errors.password}
+                        touched={!!touched.password}
+                    />
 
-        {error && <div className="auth-error">{error}</div>}
+                    <ValidatedField
+                        id="confirmPassword"
+                        label="Confirm Password"
+                        type="password"
+                        value={values.confirmPassword}
+                        onChange={(value) => setValue('confirmPassword', value)}
+                        onBlur={() => setTouched('confirmPassword')}
+                        placeholder="••••••••"
+                        disabled={isLoading}
+                        error={errors.confirmPassword}
+                        touched={!!touched.confirmPassword}
+                    />
 
-        <form onSubmit={handleSubmit} className="auth-form" role="form">
-          <div className="auth-field">
-            <label htmlFor="firstname">Firstname</label>
-            <input
-              id="firstname"
-              type="text"
-              value={firstname}
-              onChange={(e) => {
-                setFirstname(e.target.value);
-                if (touched.firstname) {
-                  setFieldErrors((prev) => ({
-                    ...prev,
-                    firstname: validateName(e.target.value, "Firstname"),
-                  }));
-                }
-              }}
-              onBlur={() => {
-                setTouched((prev) => ({ ...prev, firstname: true }));
-                setFieldErrors((prev) => ({
-                  ...prev,
-                  firstname: validateName(firstname, "Firstname"),
-                }));
-              }}
-              placeholder="Your firstname"
-              disabled={isLoading}
-            />
-            {fieldErrors.firstname && (
-              <div className="auth-field-error">{fieldErrors.firstname}</div>
-            )}
-          </div>
+                    <Button
+                        type="submit"
+                        className="auth-button"
+                        disabled={isLoading || !isFormValid}
+                        isLoading={isLoading}
+                    >
+                        {isLoading ? 'Signing up...' : 'Sign Up'}
+                    </Button>
+                </form>
 
-          <div className="auth-field">
-            <label htmlFor="lastname">Lastname</label>
-            <input
-              id="lastname"
-              type="text"
-              value={lastname}
-              onChange={(e) => {
-                setLastname(e.target.value);
-                if (touched.lastname) {
-                  setFieldErrors((prev) => ({
-                    ...prev,
-                    lastname: validateName(e.target.value, "Lastname"),
-                  }));
-                }
-              }}
-              onBlur={() => {
-                setTouched((prev) => ({ ...prev, lastname: true }));
-                setFieldErrors((prev) => ({
-                  ...prev,
-                  lastname: validateName(lastname, "Lastname"),
-                }));
-              }}
-              placeholder="Your lastname"
-              disabled={isLoading}
-            />
-            {fieldErrors.lastname && (
-              <div className="auth-field-error">{fieldErrors.lastname}</div>
-            )}
-          </div>
-
-          <div className="auth-field">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (touched.email) {
-                  setFieldErrors((prev) => ({
-                    ...prev,
-                    email: validateEmail(e.target.value),
-                  }));
-                }
-              }}
-              onBlur={() => {
-                setTouched((prev) => ({ ...prev, email: true }));
-                setFieldErrors((prev) => ({
-                  ...prev,
-                  email: validateEmail(email),
-                }));
-              }}
-              placeholder="your@email.com"
-              disabled={isLoading}
-            />
-            {fieldErrors.email && (
-              <div className="auth-field-error">{fieldErrors.email}</div>
-            )}
-          </div>
-
-          <div className="auth-field">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (touched.password) {
-                  setFieldErrors((prev) => ({
-                    ...prev,
-                    password: validatePassword(e.target.value),
-                  }));
-                }
-                if (touched.confirmPassword) {
-                  setFieldErrors((prev) => ({
-                    ...prev,
-                    confirmPassword: validateConfirmPassword(
-                      e.target.value,
-                      confirmPassword
-                    ),
-                  }));
-                }
-              }}
-              onBlur={() => {
-                setTouched((prev) => ({ ...prev, password: true }));
-                setFieldErrors((prev) => ({
-                  ...prev,
-                  password: validatePassword(password),
-                }));
-              }}
-              placeholder="••••••••"
-              disabled={isLoading}
-            />
-            {fieldErrors.password && (
-              <div className="auth-field-error">{fieldErrors.password}</div>
-            )}
-          </div>
-
-          <div className="auth-field">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-                if (touched.confirmPassword) {
-                  setFieldErrors((prev) => ({
-                    ...prev,
-                    confirmPassword: validateConfirmPassword(
-                      password,
-                      e.target.value
-                    ),
-                  }));
-                }
-              }}
-              onBlur={() => {
-                setTouched((prev) => ({ ...prev, confirmPassword: true }));
-                setFieldErrors((prev) => ({
-                  ...prev,
-                  confirmPassword: validateConfirmPassword(
-                    password,
-                    confirmPassword
-                  ),
-                }));
-              }}
-              placeholder="••••••••"
-              disabled={isLoading}
-            />
-            {fieldErrors.confirmPassword && (
-              <div className="auth-field-error">
-                {fieldErrors.confirmPassword}
-              </div>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            className="auth-button"
-            disabled={isLoading || !isFormValid}
-          >
-            {isLoading ? "Signing up..." : "Sign Up"}
-          </button>
-        </form>
-
-        <div className="auth-footer">
-          <span>Already have an account? </span>
-          <Link to="/login" className="auth-link">
-            Sign In
-          </Link>
+                <div className="auth-footer">
+                    <span>Already have an account? </span>
+                    <Link to="/login" className="auth-link">
+                        Sign In
+                    </Link>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };

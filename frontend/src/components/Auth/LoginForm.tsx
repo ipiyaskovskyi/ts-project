@@ -1,170 +1,99 @@
-import React, { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
-import "./Auth.css";
-
-interface FieldErrors {
-  email?: string;
-  password?: string;
-}
-
-interface TouchedFields {
-  email?: boolean;
-  password?: boolean;
-}
-
-const validateEmail = (email: string): string | undefined => {
-  if (!email.trim()) {
-    return "Email is required";
-  }
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return "Please enter a valid email address";
-  }
-  return undefined;
-};
-
-const validatePassword = (password: string): string | undefined => {
-  if (!password) {
-    return "Password is required";
-  }
-  return undefined;
-};
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { useFormValidation } from '../../hooks/useFormValidation';
+import { validateEmail, validatePassword } from '../../utils/validation';
+import { ValidatedField } from './ValidatedField';
+import { Button } from '../common/Button';
+import { ErrorMessage } from '../common/ErrorMessage';
+import './Auth.css';
 
 interface LoginFormProps {
-  onSubmit: (email: string, password: string) => Promise<void>;
-  isLoading?: boolean;
-  error?: string;
+    onSubmit: (email: string, password: string) => Promise<void>;
+    isLoading?: boolean;
+    error?: string;
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({
-  onSubmit,
-  isLoading = false,
-  error,
+    onSubmit,
+    isLoading = false,
+    error,
 }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [touched, setTouched] = useState<TouchedFields>({});
+    const { values, errors, touched, setValue, setTouched, validateAll } =
+        useFormValidation(
+            { email: '', password: '' },
+            {
+                email: (value) => validateEmail(value),
+                password: (value) => validatePassword(value, 0),
+            }
+        );
 
-  const emailError = useMemo(() => {
-    if (!touched.email) return undefined;
-    return validateEmail(email);
-  }, [email, touched.email]);
+    const isFormValid =
+        !errors.email &&
+        !errors.password &&
+        values.email.trim() !== '' &&
+        values.password !== '';
 
-  const passwordError = useMemo(() => {
-    if (!touched.password) return undefined;
-    return validatePassword(password);
-  }, [password, touched.password]);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
 
-  const isFormValid = useMemo(() => {
+        if (!validateAll()) {
+            return;
+        }
+
+        await onSubmit(values.email, values.password);
+    };
+
     return (
-      !emailError && !passwordError && email.trim() !== "" && password !== ""
-    );
-  }, [emailError, passwordError, email, password]);
+        <div className="auth-container">
+            <div className="auth-card">
+                <h1 className="auth-title">Sign In</h1>
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setTouched({ email: true, password: true });
+                {error && <ErrorMessage message={error} />}
 
-    const emailErr = validateEmail(email);
-    const passwordErr = validatePassword(password);
+                <form onSubmit={handleSubmit} className="auth-form" role="form">
+                    <ValidatedField
+                        id="email"
+                        label="Email"
+                        type="email"
+                        value={values.email}
+                        onChange={(value) => setValue('email', value)}
+                        onBlur={() => setTouched('email')}
+                        placeholder="your@email.com"
+                        disabled={isLoading}
+                        error={errors.email}
+                        touched={!!touched.email}
+                    />
 
-    if (emailErr || passwordErr) {
-      setFieldErrors({
-        email: emailErr,
-        password: passwordErr,
-      });
-      return;
-    }
+                    <ValidatedField
+                        id="password"
+                        label="Password"
+                        type="password"
+                        value={values.password}
+                        onChange={(value) => setValue('password', value)}
+                        onBlur={() => setTouched('password')}
+                        placeholder="••••••••"
+                        disabled={isLoading}
+                        error={errors.password}
+                        touched={!!touched.password}
+                    />
 
-    setFieldErrors({});
-    await onSubmit(email, password);
-  };
+                    <Button
+                        type="submit"
+                        className="auth-button"
+                        disabled={isLoading || !isFormValid}
+                        isLoading={isLoading}
+                    >
+                        {isLoading ? 'Signing in...' : 'Sign In'}
+                    </Button>
+                </form>
 
-  return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h1 className="auth-title">Sign In</h1>
-
-        {error && <div className="auth-error">{error}</div>}
-
-        <form onSubmit={handleSubmit} className="auth-form" role="form">
-          <div className="auth-field">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (touched.email) {
-                  setFieldErrors((prev) => ({
-                    ...prev,
-                    email: validateEmail(e.target.value),
-                  }));
-                }
-              }}
-              onBlur={() => {
-                setTouched((prev) => ({ ...prev, email: true }));
-                setFieldErrors((prev) => ({
-                  ...prev,
-                  email: validateEmail(email),
-                }));
-              }}
-              placeholder="your@email.com"
-              disabled={isLoading}
-            />
-            {fieldErrors.email && (
-              <div className="auth-field-error">{fieldErrors.email}</div>
-            )}
-          </div>
-
-          <div className="auth-field">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (touched.password) {
-                  setFieldErrors((prev) => ({
-                    ...prev,
-                    password: validatePassword(e.target.value),
-                  }));
-                }
-              }}
-              onBlur={() => {
-                setTouched((prev) => ({ ...prev, password: true }));
-                setFieldErrors((prev) => ({
-                  ...prev,
-                  password: validatePassword(password),
-                }));
-              }}
-              placeholder="••••••••"
-              disabled={isLoading}
-            />
-            {fieldErrors.password && (
-              <div className="auth-field-error">{fieldErrors.password}</div>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            className="auth-button"
-            disabled={isLoading || !isFormValid}
-          >
-            {isLoading ? "Signing in..." : "Sign In"}
-          </button>
-        </form>
-
-        <div className="auth-footer">
-          <span>Don&apos;t have an account? </span>
-          <Link to="/register" className="auth-link">
-            Sign Up
-          </Link>
+                <div className="auth-footer">
+                    <span>Don&apos;t have an account? </span>
+                    <Link to="/register" className="auth-link">
+                        Sign Up
+                    </Link>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
