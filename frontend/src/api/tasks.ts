@@ -1,4 +1,4 @@
-import type { KanbanTask, KanbanStatus, Priority } from "../types";
+import type { Task, Status, Priority } from "../types";
 
 const API_BASE_URL = "/api/tasks";
 
@@ -6,7 +6,8 @@ type ApiTask = {
   id: number;
   title: string;
   description?: string | null;
-  status: KanbanStatus;
+  type?: string | null;
+  status: Status;
   priority?: Priority | null;
   deadline?: string | null;
   createdAt?: string;
@@ -22,18 +23,15 @@ type ApiTaskResponse = ApiTask & {
   } | null;
 };
 
-const mapApiTask = (task: ApiTaskResponse): KanbanTask => ({
+const mapApiTask = (task: ApiTaskResponse): Task => ({
   id: task.id,
   title: task.title,
   description: task.description ?? undefined,
-  type: "Task",
+  type: (task.type as "Task" | "Subtask" | "Bug" | "Story" | "Epic") || "Task",
   status: task.status,
   priority: task.priority ?? "medium",
   createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
   deadline: task.deadline ? new Date(task.deadline) : undefined,
-  comments: 0,
-  files: 0,
-  stars: 0,
 });
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -51,13 +49,13 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export async function fetchTasks(): Promise<KanbanTask[]> {
+export async function fetchTasks(): Promise<Task[]> {
   const response = await fetch(API_BASE_URL);
   const data = await handleResponse<ApiTaskResponse[]>(response);
   return data.map(mapApiTask);
 }
 
-export async function fetchTaskById(id: number): Promise<KanbanTask> {
+export async function fetchTaskById(id: number): Promise<Task> {
   const response = await fetch(`${API_BASE_URL}/${id}`);
   const data = await handleResponse<ApiTaskResponse>(response);
   return mapApiTask(data);
@@ -66,7 +64,8 @@ export async function fetchTaskById(id: number): Promise<KanbanTask> {
 export interface CreateTaskPayload {
   title: string;
   description?: string;
-  status: KanbanStatus;
+  type?: string;
+  status: Status;
   priority: Priority;
   deadline?: string;
 }
@@ -80,6 +79,10 @@ const buildTaskBody = (payload: Partial<CreateTaskPayload>) => {
 
   if (payload.description !== undefined) {
     body.description = payload.description || null;
+  }
+
+  if (payload.type !== undefined) {
+    body.type = payload.type || null;
   }
 
   if (payload.status !== undefined) {
@@ -103,7 +106,7 @@ const buildTaskBody = (payload: Partial<CreateTaskPayload>) => {
 
 export async function createTask(
   payload: CreateTaskPayload
-): Promise<KanbanTask> {
+): Promise<Task> {
   const response = await fetch(API_BASE_URL, {
     method: "POST",
     headers: {
@@ -119,7 +122,7 @@ export async function createTask(
 export async function updateTask(
   id: number,
   payload: Partial<CreateTaskPayload>
-): Promise<KanbanTask> {
+): Promise<Task> {
   const response = await fetch(`${API_BASE_URL}/${id}`, {
     method: "PUT",
     headers: {

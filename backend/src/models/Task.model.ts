@@ -18,6 +18,7 @@ export interface TaskAttributes {
   id: number;
   title: string;
   description?: string | null;
+  type?: string | null;
   status: Status;
   priority: Priority;
   deadline?: Date | null;
@@ -31,6 +32,7 @@ export interface TaskCreationAttributes
     TaskAttributes,
     | "id"
     | "description"
+    | "type"
     | "status"
     | "priority"
     | "deadline"
@@ -65,6 +67,12 @@ export class Task
     allowNull: true,
   })
   declare description?: string | null;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  declare type?: string | null;
 
   @AllowNull(false)
   @Default("draft")

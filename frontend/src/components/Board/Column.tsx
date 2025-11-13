@@ -1,17 +1,17 @@
 import React from "react";
 import { useDroppable } from "@dnd-kit/core";
-import type { KanbanTask, KanbanStatus } from "../../types";
+import type { Task, Status } from "../../types";
 import { Card } from "./Card";
 
 interface ColumnProps {
-  id: KanbanStatus;
+  id: Status;
   title: string;
-  tasks: KanbanTask[];
+  tasks: Task[];
   color?: string;
-  onTaskEdit?: (task: KanbanTask) => void;
+  onTaskEdit?: (task: Task) => void;
 }
 
-const statusColors: Record<KanbanStatus, string> = {
+const statusColors: Record<Status, string> = {
   draft: "var(--color-text-tertiary)",
   in_progress: "var(--color-status-in-progress)",
   editing: "var(--color-status-editing)",

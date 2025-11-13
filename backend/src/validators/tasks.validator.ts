@@ -7,6 +7,7 @@ export const taskStatusSchema = z.enum([
   "done",
 ]);
 export const taskPrioritySchema = z.enum(["low", "medium", "high", "urgent"]);
+export const taskTypeSchema = z.enum(["Task", "Subtask", "Bug", "Story", "Epic"]);
 
 export const createTaskSchema = z.object({
   title: z
@@ -19,6 +20,7 @@ export const createTaskSchema = z.object({
       message: "Title is required and must be a non-empty string",
     }),
   description: z.string().optional().nullable(),
+  type: taskTypeSchema.optional().nullable(),
   status: taskStatusSchema.optional().default("draft"),
   priority: taskPrioritySchema.optional().default("medium"),
   deadline: z
@@ -53,6 +55,7 @@ export const updateTaskSchema = z.object({
     })
     .optional(),
   description: z.string().optional().nullable(),
+  type: taskTypeSchema.optional().nullable(),
   status: taskStatusSchema.optional(),
   priority: taskPrioritySchema.optional(),
   deadline: z

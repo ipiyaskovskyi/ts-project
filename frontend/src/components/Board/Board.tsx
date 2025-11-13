@@ -8,14 +8,14 @@ import {
   closestCorners,
 } from "@dnd-kit/core";
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
-import type { KanbanTask, KanbanStatus } from "../../types";
+import type { Task, Status } from "../../types";
 import { Column } from "./Column";
 import { Card } from "./Card";
 
 interface BoardProps {
-  tasks: KanbanTask[];
-  onTaskMove?: (taskId: number, newStatus: KanbanStatus) => void;
-  onTaskEdit?: (task: KanbanTask) => void;
+  tasks: Task[];
+  onTaskMove?: (taskId: number, newStatus: Status) => void;
+  onTaskEdit?: (task: Task) => void;
 }
 
 export const Board: React.FC<BoardProps> = ({
@@ -23,7 +23,7 @@ export const Board: React.FC<BoardProps> = ({
   onTaskMove,
   onTaskEdit,
 }) => {
-  const [activeTask, setActiveTask] = useState<KanbanTask | null>(null);
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -33,7 +33,7 @@ export const Board: React.FC<BoardProps> = ({
     })
   );
 
-  const columns: { id: KanbanStatus; title: string }[] = [
+  const columns: { id: Status; title: string }[] = [
     { id: "draft", title: "Draft" },
     { id: "in_progress", title: "In Progress" },
     { id: "editing", title: "Editing" },
@@ -45,7 +45,7 @@ export const Board: React.FC<BoardProps> = ({
       acc[column.id] = tasks.filter((task) => task.status === column.id);
       return acc;
     },
-    {} as Record<KanbanStatus, KanbanTask[]>
+    {} as Record<Status, Task[]>
   );
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -68,7 +68,7 @@ export const Board: React.FC<BoardProps> = ({
       setActiveTask(null);
       return;
     }
-    const newStatus = over.id as KanbanStatus;
+    const newStatus = over.id as Status;
 
     if (columns.some((col) => col.id === newStatus)) {
       if (onTaskMove) {

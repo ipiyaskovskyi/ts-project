@@ -64,10 +64,52 @@ async function ensurePostgresEnums() {
   ]);
 }
 
+async function addTypeColumnIfNotExists() {
+  const dialect = sequelize.getDialect();
+  const tableName = "tasks";
+  const columnName = "type";
+
+  try {
+    if (dialect === "postgres") {
+      const [results] = await sequelize.query(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = '${tableName}' AND column_name = '${columnName}'
+      `);
+      if (Array.isArray(results) && results.length === 0) {
+        await sequelize.query(
+          `ALTER TABLE "${tableName}" ADD COLUMN "${columnName}" VARCHAR(255)`
+        );
+        console.log(`Added column ${columnName} to ${tableName}`);
+      }
+    } else if (dialect === "sqlite") {
+      const [results] = (await sequelize.query(
+        `PRAGMA table_info(${tableName})`
+      )) as unknown[];
+      const hasColumn = Array.isArray(results) && results.some(
+        (row: unknown) =>
+          typeof row === "object" &&
+          row !== null &&
+          "name" in row &&
+          row.name === columnName
+      );
+      if (!hasColumn) {
+        await sequelize.query(
+          `ALTER TABLE ${tableName} ADD COLUMN ${columnName} VARCHAR(255)`
+        );
+        console.log(`Added column ${columnName} to ${tableName}`);
+      }
+    }
+  } catch (error) {
+    console.error(`Error adding column ${columnName}:`, error);
+  }
+}
+
 async function initializeDatabase() {
   try {
     await sequelize.authenticate();
-    await sequelize.sync({ force: false });
+    await sequelize.sync({ force: false, alter: false });
+    await addTypeColumnIfNotExists();
     await ensurePostgresEnums();
     console.log("Database connected and synced");
   } catch (error) {

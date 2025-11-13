@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { FiPlus, FiX, FiFilter } from "react-icons/fi";
-import type { KanbanStatus, Priority } from "../../types";
+import type { Status, Priority } from "../../types";
 
 interface FilterState {
-  status: KanbanStatus | "";
+  status: Status | "";
   priority: Priority | "";
   createdFrom: string;
   createdTo: string;

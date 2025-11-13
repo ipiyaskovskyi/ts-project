@@ -4,6 +4,7 @@ import type { Status, Priority } from "../dto/Task.js";
 export interface CreateTaskData {
   title: string;
   description?: string | null;
+  type?: string | null;
   status?: Status;
   priority?: Priority;
   deadline?: Date | null;
@@ -13,6 +14,7 @@ export interface CreateTaskData {
 export interface UpdateTaskData {
   title?: string;
   description?: string | null;
+  type?: string | null;
   status?: Status;
   priority?: Priority;
   deadline?: Date | null;
@@ -49,6 +51,7 @@ export class TasksService {
     const task = await Task.create({
       title: data.title,
       description: data.description || null,
+      type: data.type || null,
       status: data.status || "draft",
       priority: data.priority || "medium",
       deadline: data.deadline || null,
@@ -69,6 +72,9 @@ export class TasksService {
     }
     if (data.description !== undefined) {
       task.description = data.description;
+    }
+    if (data.type !== undefined) {
+      task.type = data.type;
     }
     if (data.status !== undefined) {
       task.status = data.status;

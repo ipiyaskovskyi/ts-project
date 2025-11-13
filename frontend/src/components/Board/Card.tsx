@@ -1,14 +1,14 @@
 import React from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { FiEdit2 } from "react-icons/fi";
-import type { KanbanTask } from "../../types";
+import type { Task } from "../../types";
 
 interface CardProps {
-  task: KanbanTask;
-  onEdit?: (task: KanbanTask) => void;
+  task: Task;
+  onEdit?: (task: Task) => void;
 }
 
-const priorityColor: Record<KanbanTask["priority"], string> = {
+const priorityColor: Record<Task["priority"], string> = {
   low: "#97a0af",
   medium: "#0052cc",
   high: "#ff5630",
@@ -128,23 +128,6 @@ export const Card: React.FC<CardProps> = ({ task, onEdit }) => {
           {task.description}
         </p>
       )}
-
-      {task.comments !== undefined || task.files !== undefined ? (
-        <div
-          style={{
-            display: "flex",
-            gap: "var(--spacing-sm)",
-            fontSize: "0.75rem",
-            color: "var(--color-text-secondary)",
-            marginTop: "var(--spacing-sm)",
-          }}
-        >
-          {typeof task.comments === "number" && (
-            <span>Comments: {task.comments}</span>
-          )}
-          {typeof task.files === "number" && <span>Files: {task.files}</span>}
-        </div>
-      ) : null}
     </div>
   );
 };

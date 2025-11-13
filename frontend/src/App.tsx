@@ -6,7 +6,7 @@ import {
   CreateTaskModal,
   type TaskFormValues,
 } from "./components/Board/CreateTaskModal";
-import type { KanbanTask, KanbanStatus } from "./types";
+import type { Task, Status } from "./types";
 import {
   fetchTasks,
   createTask,
@@ -17,14 +17,14 @@ import {
 import "./App.css";
 
 interface FilterState {
-  status: KanbanStatus | "";
+  status: Status | "";
   priority: string;
   createdFrom: string;
   createdTo: string;
 }
 
 function App() {
-  const [kanbanTasks, setKanbanTasks] = useState<KanbanTask[]>([]);
+  const [kanbanTasks, setKanbanTasks] = useState<Task[]>([]);
   const [filters, setFilters] = useState<FilterState>({
     status: "",
     priority: "",
@@ -32,10 +32,10 @@ function App() {
     createdTo: "",
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<KanbanTask | null>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const previousTasksRef = useRef<KanbanTask[] | null>(null);
+  const previousTasksRef = useRef<Task[] | null>(null);
 
   useEffect(() => {
     const loadTasks = async () => {
@@ -57,7 +57,7 @@ function App() {
     loadTasks();
   }, []);
 
-  const handleTaskMove = (taskId: number, newStatus: KanbanStatus) => {
+  const handleTaskMove = (taskId: number, newStatus: Status) => {
     setKanbanTasks((prevTasks) => {
       previousTasksRef.current = prevTasks;
       return prevTasks.map((task) =>
@@ -89,6 +89,7 @@ function App() {
     const payload: CreateTaskPayload = {
       title: data.title,
       description: data.description || undefined,
+      type: data.type,
       status: data.status,
       priority: data.priority,
       deadline: data.deadline || undefined,
@@ -117,6 +118,7 @@ function App() {
       const updatedTask = await updateTask(editingTask.id, {
         title: data.title,
         description: data.description || undefined,
+        type: data.type,
         status: data.status,
         priority: data.priority,
         deadline: data.deadline || undefined,
@@ -267,7 +269,7 @@ function App() {
 
 export default App;
 
-function mapTaskToFormValues(task: KanbanTask): TaskFormValues {
+function mapTaskToFormValues(task: Task): TaskFormValues {
   return {
     title: task.title,
     description: task.description ?? "",

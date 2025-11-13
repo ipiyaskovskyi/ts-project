@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { deleteTask, fetchTaskById, updateTask } from "../../api/tasks";
-import type { KanbanStatus, KanbanTask, Priority, TaskType } from "../../types";
+import type { Status, Task, Priority, TaskType } from "../../types";
 import { Header } from "../../components/Layout/Header";
 
 export const BoardPage: React.FC = () => {
   const { ticketId } = useParams<{ ticketId: string }>();
   const navigate = useNavigate();
-  const [task, setTask] = useState<KanbanTask | null>(null);
+  const [task, setTask] = useState<Task | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -17,11 +17,11 @@ export const BoardPage: React.FC = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [type, setType] = useState<TaskType>("Task");
-  const [status, setStatus] = useState<KanbanStatus>("draft");
+  const [status, setStatus] = useState<Status>("draft");
   const [priority, setPriority] = useState<Priority>("medium");
   const [deadline, setDeadline] = useState("");
 
-  const statusOptions: KanbanStatus[] = useMemo(
+  const statusOptions: Status[] = useMemo(
     () => ["draft", "in_progress", "editing", "done"],
     []
   );
@@ -310,7 +310,7 @@ export const BoardPage: React.FC = () => {
                 label="Status"
                 value={status}
                 onChange={(event) =>
-                  setStatus(event.target.value as KanbanStatus)
+                  setStatus(event.target.value as Status)
                 }
                 options={statusOptions}
               />

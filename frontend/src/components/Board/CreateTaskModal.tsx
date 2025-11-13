@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { FiTrash2, FiX } from "react-icons/fi";
-import type { KanbanStatus, Priority, TaskType } from "../../types";
+import type { Status, Priority, TaskType } from "../../types";
 
 export interface TaskFormValues {
   title: string;
   description: string;
   type: TaskType;
-  status: KanbanStatus;
+  status: Status;
   priority: Priority;
   deadline: string;
 }
@@ -54,7 +54,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
     mergedInitialValues.description
   );
   const [type, setType] = useState<TaskType>(mergedInitialValues.type);
-  const [status, setStatus] = useState<KanbanStatus>(
+  const [status, setStatus] = useState<Status>(
     mergedInitialValues.status
   );
   const [priority, setPriority] = useState<Priority>(
@@ -466,7 +466,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
               <select
                 id="task-status"
                 value={status}
-                onChange={(e) => setStatus(e.target.value as KanbanStatus)}
+                onChange={(e) => setStatus(e.target.value as Status)}
                 style={{
                   width: "100%",
                   padding: "var(--spacing-sm) var(--spacing-md)",
