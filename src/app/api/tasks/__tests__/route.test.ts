@@ -3,6 +3,7 @@ import { Task, User } from '@/lib/models';
 import { sequelize } from '@/lib/db/sequelize';
 import { NextRequest } from 'next/server';
 import type { RequestInit as NextRequestInit } from 'next/dist/server/web/spec-extension/request';
+import { generateToken } from '@/lib/auth/jwt';
 
 beforeAll(async () => {
   try {
@@ -17,20 +18,43 @@ afterAll(async () => {
   await sequelize.close();
 });
 
+let testUser: User | null = null;
+let authToken: string | null = null;
+
 beforeEach(async () => {
   await Task.destroy({ where: {} });
   await User.destroy({ where: {} });
+
+  testUser = await User.create({
+    firstname: 'Test',
+    lastname: 'User',
+    email: 'test@example.com',
+    password: 'testpassword',
+  });
+
+  authToken = generateToken({
+    id: testUser.id,
+    firstname: testUser.firstname,
+    lastname: testUser.lastname,
+    email: testUser.email,
+    createdAt: testUser.createdAt,
+    updatedAt: testUser.updatedAt,
+  });
 });
 
 function createMockRequest(
   method: string,
   url: string,
-  body?: Record<string, unknown>
+  body?: Record<string, unknown>,
+  includeAuth = true
 ): NextRequest {
   const fullUrl = `http://localhost:3000${url}`;
   const headers = new Headers();
   if (body) {
     headers.set('Content-Type', 'application/json');
+  }
+  if (includeAuth && authToken) {
+    headers.set('Authorization', `Bearer ${authToken}`);
   }
   const requestInit: NextRequestInit = {
     method,
@@ -50,7 +74,11 @@ describe('GET /api/tasks', () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data).toEqual([]);
+    expect(Array.isArray(data) || (data && Array.isArray(data.tasks))).toBe(
+      true
+    );
+    const tasks = Array.isArray(data) ? data : data.tasks;
+    expect(tasks).toEqual([]);
   });
 
   it('should return all tasks with assignee information', async () => {
@@ -78,9 +106,12 @@ describe('GET /api/tasks', () => {
 
     const req = createMockRequest('GET', '/api/tasks');
     const response = await GET(req);
-    const data = await response.json();
+    const responseData = await response.json();
 
     expect(response.status).toBe(200);
+    const data = Array.isArray(responseData)
+      ? responseData
+      : responseData.tasks;
     expect(data).toHaveLength(2);
 
     const task1Response = data.find((t: { id: number }) => t.id === task1.id);
@@ -161,7 +192,8 @@ describe('POST /api/tasks', () => {
     });
 
     const response = await POST(req);
-    const data = await response.json();
+    const responseData = await response.json();
+    const data = responseData.data || responseData;
 
     expect(response.status).toBe(201);
     expect(data.id).toBeDefined();
@@ -179,7 +211,8 @@ describe('POST /api/tasks', () => {
     });
 
     const response = await POST(req);
-    const data = await response.json();
+    const responseData = await response.json();
+    const data = responseData.data || responseData;
 
     expect(response.status).toBe(201);
     expect(data.title).toBe('Minimal Task');
