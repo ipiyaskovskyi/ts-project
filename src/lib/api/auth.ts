@@ -39,6 +39,10 @@ export interface RegisterPayload {
   lastname: string;
   email: string;
   password: string;
+  mobilePhone?: string | null;
+  country?: string | null;
+  city?: string | null;
+  address?: string | null;
 }
 
 export async function login(payload: LoginPayload): Promise<AuthResponse> {

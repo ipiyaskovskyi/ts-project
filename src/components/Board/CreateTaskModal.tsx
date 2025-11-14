@@ -277,7 +277,7 @@ export const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
     mode === 'edit' && ticketId != null
       ? {
           label: `TM-${ticketId}`,
-          href: `/tickets/${ticketId}`,
+          href: `/tasks/${ticketId}`,
         }
       : null;
   const showDeleteButton = mode === 'edit' && onDelete != null;

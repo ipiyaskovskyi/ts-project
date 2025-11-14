@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box, Container, Alert, CircularProgress } from '@mui/material';
 import { Header } from '@/components/Layout/Header';
+import { Sidebar } from '@/components/Layout/Sidebar';
 import { Board } from '@/components/Board/Board';
 import { Toolbar } from '@/components/Board/Toolbar';
 import {
@@ -63,7 +64,10 @@ export default function BoardPage() {
           apiFilters.createdTo = filters.createdTo;
         }
 
-        const tasks = await fetchTasks(apiFilters);
+        const tasksResponse = await fetchTasks(apiFilters);
+        const tasks = Array.isArray(tasksResponse)
+          ? tasksResponse
+          : tasksResponse.tasks;
         setKanbanTasks(tasks);
         setError(null);
       } catch (err) {
@@ -206,62 +210,64 @@ export default function BoardPage() {
   }
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
-      }}
-    >
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <Header />
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Toolbar
-          onCreateTask={handleCreateTask}
-          onFilterChange={handleFilterChange}
+      <Sidebar>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+          }}
+        >
+          <Toolbar
+            onCreateTask={handleCreateTask}
+            onFilterChange={handleFilterChange}
+          />
+          <Container maxWidth={false} sx={{ py: 3, flex: 1 }}>
+            {error && (
+              <Alert severity="warning" sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+            {isLoading ? (
+              <Box
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                minHeight={200}
+              >
+                <CircularProgress />
+              </Box>
+            ) : (
+              <Board
+                tasks={kanbanTasks}
+                onTaskMove={handleTaskMove}
+                onTaskEdit={setEditingTask}
+              />
+            )}
+          </Container>
+        </Box>
+
+        <CreateTaskModal
+          isOpen={isCreateModalOpen}
+          mode="create"
+          onClose={() => setIsCreateModalOpen(false)}
+          onSubmit={handleCreateTaskSubmit}
         />
-        <Container maxWidth={false} sx={{ py: 3, flex: 1 }}>
-          {error && (
-            <Alert severity="warning" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-          {isLoading ? (
-            <Box
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              minHeight={200}
-            >
-              <CircularProgress />
-            </Box>
-          ) : (
-            <Board
-              tasks={kanbanTasks}
-              onTaskMove={handleTaskMove}
-              onTaskEdit={setEditingTask}
-            />
-          )}
-        </Container>
-      </Box>
 
-      <CreateTaskModal
-        isOpen={isCreateModalOpen}
-        mode="create"
-        onClose={() => setIsCreateModalOpen(false)}
-        onSubmit={handleCreateTaskSubmit}
-      />
-
-      <CreateTaskModal
-        isOpen={Boolean(editingTask)}
-        mode="edit"
-        initialValues={
-          editingTask ? mapTaskToFormValues(editingTask) : undefined
-        }
-        onClose={() => setEditingTask(null)}
-        onSubmit={handleEditTaskSubmit}
-        onDelete={handleDeleteTask}
-        ticketId={editingTask?.id ?? null}
-      />
+        <CreateTaskModal
+          isOpen={Boolean(editingTask)}
+          mode="edit"
+          initialValues={
+            editingTask ? mapTaskToFormValues(editingTask) : undefined
+          }
+          onClose={() => setEditingTask(null)}
+          onSubmit={handleEditTaskSubmit}
+          onDelete={handleDeleteTask}
+          ticketId={editingTask?.id ?? null}
+        />
+      </Sidebar>
     </Box>
   );
 }

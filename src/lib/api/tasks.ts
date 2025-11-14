@@ -33,6 +33,14 @@ const mapApiTask = (task: ApiTaskResponse): Task => ({
   priority: task.priority ?? 'medium',
   createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
   deadline: task.deadline ? new Date(task.deadline) : undefined,
+  assignee: task.assignee
+    ? {
+        id: task.assignee.id,
+        firstname: task.assignee.firstname,
+        lastname: task.assignee.lastname,
+        email: task.assignee.email,
+      }
+    : null,
 });
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -55,9 +63,25 @@ export interface TaskFilters {
   priority?: string | '';
   createdFrom?: string;
   createdTo?: string;
+  page?: number;
+  limit?: number;
 }
 
-export async function fetchTasks(filters?: TaskFilters): Promise<Task[]> {
+export interface PaginatedTasksResponse {
+  tasks: Task[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+export async function fetchTasks(
+  filters?: TaskFilters
+): Promise<Task[] | PaginatedTasksResponse> {
   const queryParams = new URLSearchParams();
 
   if (filters) {
@@ -72,6 +96,12 @@ export async function fetchTasks(filters?: TaskFilters): Promise<Task[]> {
     }
     if (filters.createdTo) {
       queryParams.append('createdTo', filters.createdTo);
+    }
+    if (filters.page) {
+      queryParams.append('page', String(filters.page));
+    }
+    if (filters.limit) {
+      queryParams.append('limit', String(filters.limit));
     }
   }
 
@@ -89,24 +119,39 @@ export async function fetchTasks(filters?: TaskFilters): Promise<Task[]> {
     ApiTaskResponse[] | { tasks: ApiTaskResponse[]; pagination: unknown }
   >(response);
 
-  let tasksArray: ApiTaskResponse[];
   if (Array.isArray(data)) {
-    tasksArray = data;
-  } else if (
+    return data.map(mapApiTask);
+  }
+
+  if (
     data &&
     typeof data === 'object' &&
     'tasks' in data &&
+    'pagination' in data &&
     Array.isArray(data.tasks)
   ) {
-    tasksArray = data.tasks;
-  } else {
-    console.error('Invalid response format:', data);
-    throw new Error(
-      'Invalid response format from API: expected array or paginated object'
-    );
+    const paginatedData = data as {
+      tasks: ApiTaskResponse[];
+      pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+        hasNext: boolean;
+        hasPrev: boolean;
+      };
+    };
+
+    return {
+      tasks: paginatedData.tasks.map(mapApiTask),
+      pagination: paginatedData.pagination,
+    };
   }
 
-  return tasksArray.map(mapApiTask);
+  console.error('Invalid response format:', data);
+  throw new Error(
+    'Invalid response format from API: expected array or paginated object'
+  );
 }
 
 export async function fetchTaskById(id: number): Promise<Task> {

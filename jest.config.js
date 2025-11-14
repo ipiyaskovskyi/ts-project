@@ -26,4 +26,5 @@ const customJestConfig = {
   },
 };
 
-module.exports = createJestConfig(customJestConfig);
+const jestConfig = createJestConfig(customJestConfig);
+module.exports = jestConfig;

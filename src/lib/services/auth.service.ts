@@ -8,6 +8,10 @@ export interface RegisterData {
   lastname: string;
   email: string;
   password: string;
+  mobilePhone?: string | null;
+  country?: string | null;
+  city?: string | null;
+  address?: string | null;
 }
 
 export interface LoginData {
@@ -33,6 +37,10 @@ export class AuthService {
       lastname: data.lastname,
       email: data.email,
       password: hashedPassword,
+      mobilePhone: data.mobilePhone || null,
+      country: data.country || null,
+      city: data.city || null,
+      address: data.address || null,
     });
 
     /* eslint-disable @typescript-eslint/no-unused-vars */

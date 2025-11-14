@@ -13,6 +13,10 @@ export interface UserAttributes {
   lastname: string;
   email: string;
   password: string;
+  mobilePhone?: string | null;
+  country?: string | null;
+  city?: string | null;
+  address?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -30,6 +34,10 @@ export class User
   declare lastname: string;
   declare email: string;
   declare password: string;
+  declare mobilePhone: string | null;
+  declare country: string | null;
+  declare city: string | null;
+  declare address: string | null;
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
 
@@ -60,6 +68,22 @@ User.init(
     password: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    mobilePhone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    country: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    city: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     createdAt: {
       type: DataTypes.DATE,

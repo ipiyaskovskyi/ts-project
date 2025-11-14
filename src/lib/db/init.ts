@@ -42,7 +42,9 @@ export async function initializeDatabase(): Promise<void> {
 
         if (shouldSync) {
           try {
-            await sequelize.sync({ alter: false });
+            await sequelize.sync({
+              alter: sequelize.getDialect() === 'sqlite',
+            });
             console.log('Database models synchronized.');
           } catch (syncError) {
             console.warn('Database sync warning:', syncError);

@@ -12,6 +12,11 @@ import {
   Button,
   Alert,
   CircularProgress,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  FormHelperText,
 } from '@mui/material';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import {
@@ -21,6 +26,7 @@ import {
   validateConfirmPassword,
 } from '@/utils/validation';
 import { register } from '@/lib/api/auth';
+import { countries } from '@/lib/data/countries';
 
 export const RegisterForm: React.FC = () => {
   const router = useRouter();
@@ -35,6 +41,10 @@ export const RegisterForm: React.FC = () => {
         email: '',
         password: '',
         confirmPassword: '',
+        mobilePhone: '',
+        country: '',
+        city: '',
+        address: '',
       },
       {
         firstname: (value) => validateName(value, 'Firstname'),
@@ -45,6 +55,10 @@ export const RegisterForm: React.FC = () => {
           if (!allValues) return 'Please confirm your password';
           return validateConfirmPassword(allValues.password, value);
         },
+        mobilePhone: () => '',
+        country: () => '',
+        city: () => '',
+        address: () => '',
       }
     );
 
@@ -75,6 +89,10 @@ export const RegisterForm: React.FC = () => {
         password: values.password,
         firstname: values.firstname,
         lastname: values.lastname,
+        mobilePhone: values.mobilePhone.trim() || null,
+        country: values.country || null,
+        city: values.city.trim() || null,
+        address: values.address.trim() || null,
       });
       router.push('/board');
     } catch (err) {
@@ -208,6 +226,78 @@ export const RegisterForm: React.FC = () => {
                 }
                 fullWidth
                 required
+              />
+
+              <TextField
+                id="mobilePhone"
+                label="Mobile Phone"
+                type="tel"
+                value={values.mobilePhone}
+                onChange={(e) => setValue('mobilePhone', e.target.value)}
+                onBlur={() => setTouched('mobilePhone')}
+                placeholder="+1234567890"
+                disabled={isLoading}
+                error={!!errors.mobilePhone && !!touched.mobilePhone}
+                helperText={touched.mobilePhone ? errors.mobilePhone : ''}
+                fullWidth
+              />
+
+              <FormControl
+                fullWidth
+                error={!!errors.country && !!touched.country}
+                disabled={isLoading}
+              >
+                <InputLabel id="country-label">Country</InputLabel>
+                <Select
+                  id="country"
+                  labelId="country-label"
+                  value={values.country || ''}
+                  onChange={(e) => setValue('country', e.target.value)}
+                  onBlur={() => setTouched('country')}
+                  label="Country"
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {countries.map((country) => (
+                    <MenuItem key={country.code} value={country.code}>
+                      {country.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {touched.country && errors.country && (
+                  <FormHelperText>{errors.country}</FormHelperText>
+                )}
+              </FormControl>
+
+              <TextField
+                id="city"
+                label="City"
+                type="text"
+                value={values.city}
+                onChange={(e) => setValue('city', e.target.value)}
+                onBlur={() => setTouched('city')}
+                placeholder="e.g., Kyiv, New York"
+                disabled={isLoading}
+                error={!!errors.city && !!touched.city}
+                helperText={touched.city ? errors.city : ''}
+                fullWidth
+              />
+
+              <TextField
+                id="address"
+                label="Address"
+                type="text"
+                value={values.address}
+                onChange={(e) => setValue('address', e.target.value)}
+                onBlur={() => setTouched('address')}
+                placeholder="Street address, apartment, etc."
+                disabled={isLoading}
+                error={!!errors.address && !!touched.address}
+                helperText={touched.address ? errors.address : ''}
+                fullWidth
+                multiline
+                rows={2}
               />
 
               <Button
