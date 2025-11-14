@@ -82,19 +82,16 @@ describe('GET /api/tasks', () => {
   });
 
   it('should return all tasks with assignee information', async () => {
-    const user = await User.create({
-      firstname: 'Test',
-      lastname: 'User',
-      email: 'test@example.com',
-      password: 'testpassword',
-    });
+    if (!testUser) {
+      throw new Error('Test user not created');
+    }
 
     const task1 = await Task.create({
       title: 'Task 1',
       description: 'Description 1',
       status: 'todo',
       priority: 'high',
-      assigneeId: user.id,
+      assigneeId: testUser.id,
     });
 
     const task2 = await Task.create({
@@ -119,8 +116,8 @@ describe('GET /api/tasks', () => {
     if (task1Response) {
       expect(task1Response.title).toBe('Task 1');
       expect(task1Response.assignee).toBeDefined();
-      if (task1Response.assignee) {
-        expect(task1Response.assignee.id).toBe(user.id);
+      if (task1Response.assignee && testUser) {
+        expect(task1Response.assignee.id).toBe(testUser.id);
         expect(task1Response.assignee.firstname).toBe('Test');
         expect(task1Response.assignee.lastname).toBe('User');
       }
