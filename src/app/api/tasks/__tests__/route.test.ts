@@ -2,6 +2,7 @@ import { GET, POST } from '../route';
 import { Task, User } from '@/lib/models';
 import { sequelize } from '@/lib/db/sequelize';
 import { NextRequest } from 'next/server';
+import type { RequestInit as NextRequestInit } from 'next/dist/server/web/spec-extension/request';
 
 beforeAll(async () => {
   try {
@@ -31,7 +32,7 @@ function createMockRequest(
   if (body) {
     headers.set('Content-Type', 'application/json');
   }
-  const requestInit: RequestInit = {
+  const requestInit: NextRequestInit = {
     method,
     headers,
     ...(body && {
