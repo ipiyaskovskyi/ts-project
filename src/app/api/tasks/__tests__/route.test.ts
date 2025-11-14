@@ -36,7 +36,6 @@ function createMockRequest(
     ...(body && { body: JSON.stringify(body) }),
     ...(body && { headers: { 'Content-Type': 'application/json' } }),
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const request = new NextRequest(fullUrl, requestInit as any);
   return request;
 }

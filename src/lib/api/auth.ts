@@ -7,7 +7,6 @@ async function handleResponse<T>(response: Response): Promise<T> {
         message = errorBody.error;
       }
     } catch {
-      // Ignore JSON parse errors
     }
     throw new Error(message);
   }

@@ -23,7 +23,6 @@ export interface TaskAttributes {
   updatedAt?: Date;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface TaskCreationAttributes
   extends Optional<
     TaskAttributes,
