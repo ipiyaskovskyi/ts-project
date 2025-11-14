@@ -1,13 +1,12 @@
 node_modules
-dist
+.next
+out
 build
+dist
 coverage
-*.min.js
-*.min.css
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
-.git
-.vscode
-.idea
+*.log
+.env*
+*.sqlite
+*.db
+.DS_Store
 
