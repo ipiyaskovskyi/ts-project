@@ -2,7 +2,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { taskSchema, type TaskFormData } from '../schemas/taskSchema';
 import { createTask } from '../api/taskApi';
-import type { TaskType } from '../types/Task';
 import './CreateTaskForm.css';
 
 
@@ -19,15 +18,7 @@ const CreateTaskForm = () => {
 
   const onSubmit = async (data: TaskFormData) => {
     try {
-      const taskData: Omit<TaskType, 'id'> = {
-        title: data.title,
-        description: data.description || '',
-        status: data.status,
-        priority: data.priority,
-        deadline: data.deadline || undefined,
-      };
-
-      await createTask(taskData);
+      await createTask(data);
       reset();
     } catch (error) {
       console.error('Error creating task:', error);

@@ -4,22 +4,18 @@ const BASE = '/api/tasks';
 
 export async function listTasks(): Promise<TaskType[]> {
   const res = await fetch(BASE);
-  const data = await res.json();
-  return (Array.isArray(data)
-    ? data
-    : []) as TaskType[];
+  return res.json();
 }
 
 export async function getTask(id: number): Promise<TaskType> {
   const res = await fetch(`${BASE}/${id}`);
-  const data = await res.json();
-  return data as TaskType;
+  return res.json();
 }
 
 export async function createTask(task: Omit<TaskType, 'id'>): Promise<TaskType> {
   const toSend = {
 		...task,
-		createdAt: new Date().toISOString()
+		createdAt: new Date()
 	};
   const res = await fetch(BASE, {
     method: 'POST',
@@ -28,8 +24,7 @@ export async function createTask(task: Omit<TaskType, 'id'>): Promise<TaskType> 
 		},
     body: JSON.stringify(toSend),
   });
-  const data = await res.json();
-  return data as TaskType;
+  return res.json();
 }
 
 export async function updateTask(id: number, patch: Partial<TaskType>): Promise<TaskType> {
