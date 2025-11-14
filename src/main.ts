@@ -1,49 +1,22 @@
 import { createTask, deleteTask, listTasks, updateTask, type TaskUpdatePayload, type TaskCreatePayload } from "./api";
-import type { Priority, Status, TaskType, DateString, TaskId } from "./dto/Task";
+import type { TaskType } from "./dto/Task";
+import { formatDate, formatDeadline, normalizeTaskFormData, toDateInputValue, validateTaskData } from "./utils/task";
 
-function formatDate(date?: DateString) {
-  if (!date) return '';
-  const d = new Date(date);
-  return d.toLocaleString();
-}
-
-function toDateInputValue(date?: DateString) {
-  if (!date) return '';
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return '';
-  return d.toISOString().slice(0, 10);
-}
-function formatDeadline(date?: DateString) {
-  if (!date) return '—';
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return '—';
-  const pad = (n: number) => String(n).padStart(2, '0');
-  const day = pad(d.getDate());
-  const month = pad(d.getMonth() + 1);
-  const year = d.getFullYear();
-  const hours = pad(d.getHours());
-  const minutes = pad(d.getMinutes());
-  const seconds = pad(d.getSeconds());
-  return `${day}/${month}/${year}, ${hours}:${minutes}:${seconds}`;
-}
-
-function createDeleteHandler(task: TaskType, container: HTMLElement) {
-  return async () => {
-    if (!task.id) return;
-    if (!confirm('Delete task?')) return;
-    try {
-      await deleteTask(task.id);
-      await renderTasks(container);
-    } catch (e) {
-      alert('Delete error: ' + String(e));
-    }
-  };
+async function createDeleteHandler(task: TaskType) {
+  if (!task.id) return;
+  if (!confirm('Delete task?')) return;
+  try {
+    await deleteTask(task.id);
+    await renderTasks();
+  } catch (e) {
+    alert('Delete error: ' + String(e));
+  }
 }
 
 function createTaskCard(task: TaskType): HTMLElement {
   const card = document.createElement('div');
   card.className = 'card shadow-sm';
-  if (task.id != null) {
+  if (task.id !== null) {
     card.dataset.taskId = String(task.id);
   }
 
@@ -77,7 +50,7 @@ function createTaskCard(task: TaskType): HTMLElement {
   editBtn.type = 'button';
   editBtn.className = 'btn btn-sm btn-outline-primary';
   editBtn.textContent = 'Edit';
-  if (task.id != null) {
+  if (task.id !== null) {
     editBtn.dataset.action = 'edit';
     editBtn.dataset.taskId = String(task.id);
   }
@@ -86,7 +59,7 @@ function createTaskCard(task: TaskType): HTMLElement {
   delBtn.type = 'button';
   delBtn.className = 'btn btn-sm btn-outline-danger';
   delBtn.textContent = 'Delete';
-  if (task.id != null) {
+  if (task.id !== null) {
     delBtn.dataset.action = 'delete';
     delBtn.dataset.taskId = String(task.id);
   }
@@ -105,19 +78,19 @@ function createTaskCard(task: TaskType): HTMLElement {
   return card;
 }
 
-async function renderTasks(container: HTMLElement) {
-  container.innerHTML = `<div class="text-muted">Loading...</div>`;
+async function renderTasks() {
+  tasksContainerEl.innerHTML = `<div class="text-muted">Loading...</div>`;
   
   let tasks: TaskType[] = [];
   try {
     tasks = await listTasks();
   } catch (e) {
-    container.innerHTML = `<div class="alert alert-danger">Error loading tasks: ${String(e)}</div>`;
+    tasksContainerEl.innerHTML = `<div class="alert alert-danger">Error loading tasks: ${String(e)}</div>`;
     return;
   }
 
   if (tasks.length === 0) {
-    container.innerHTML = `<div class="alert alert-info">No tasks.</div>`;
+    tasksContainerEl.innerHTML = `<div class="alert alert-info">No tasks.</div>`;
     return;
   }
 
@@ -126,66 +99,23 @@ async function renderTasks(container: HTMLElement) {
   list.className = 'd-flex flex-column gap-3';
 
   for (const task of tasks) {
-    if (task.id != null) {
+    if (task.id !== null) {
       taskCache.set(String(task.id), task);
     }
     const card = createTaskCard(task);
     list.appendChild(card);
   }
 
-  container.innerHTML = '';
-  container.appendChild(list);
+  tasksContainerEl.innerHTML = '';
+  tasksContainerEl.appendChild(list);
 }
 
-let tasksContainerEl: HTMLElement | null = null;
+let tasksContainerEl!: HTMLElement;
 type ModalInstance = { show(): void; hide(): void };
 let editModalInstance: ModalInstance | null = null;
 let editModalEl: HTMLElement | null = null;
 let editTaskFormEl: HTMLFormElement | null = null;
 const taskCache = new Map<string, TaskType>();
-
-type TaskFormValues = Omit<TaskType, 'createdAt' | 'deadline' | 'id'> & {
-  id?: TaskId;
-  deadline?: string;
-};
-
-function normalizeTaskFormData(formData: FormData): TaskFormValues {
-  const getStringValue = (name: string) => {
-    const value = formData.get(name);
-    return typeof value === 'string' ? value : '';
-  };
-
-  const idValue = getStringValue('id').trim();
-  const statusValue = getStringValue('status').trim();
-  const priorityValue = getStringValue('priority').trim();
-  const deadlineValue = getStringValue('deadline').trim();
-
-  return {
-    id: idValue ? (idValue as TaskId) : undefined,
-    title: getStringValue('title').trim(),
-    description: getStringValue('description').trim(),
-    status: statusValue ? (statusValue as Status) : undefined,
-    priority: priorityValue ? (priorityValue as Priority) : undefined,
-    deadline: deadlineValue || undefined,
-  };
-}
-
-function validateTaskData(data: TaskFormValues): string | null {
-  if (!data.title) {
-    return 'Title is required';
-  }
-
-  if (data.deadline) {
-    const deadlineDate = new Date(data.deadline);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    if (deadlineDate < now) {
-      return 'Deadline cannot be in the past';
-    }
-  }
-
-  return null;
-}
 
 async function handleEditTaskSubmit(ev: SubmitEvent) {
   ev.preventDefault();
@@ -214,18 +144,13 @@ async function handleEditTaskSubmit(ev: SubmitEvent) {
   try {
     await updateTask(id, patch);
     editModalInstance?.hide();
-    const container =
-      tasksContainerEl ?? (document.getElementById('tasks') as HTMLElement | null);
-    if (container) {
-      tasksContainerEl = container;
-      await renderTasks(container);
-    }
+    await renderTasks();
   } catch (e) {
     alert('Update error: ' + String(e));
   }
 }
 
-function handleTasksContainerClick(ev: MouseEvent) {
+async function handleTasksContainerClick(ev: MouseEvent) {
   const target = ev.target as HTMLElement | null;
   if (!target) return;
   const button = target.closest('button[data-action][data-task-id]') as HTMLButtonElement | null;
@@ -236,16 +161,10 @@ function handleTasksContainerClick(ev: MouseEvent) {
   const task = taskCache.get(taskId);
   if (!task) return;
 
-  const container =
-    tasksContainerEl ?? (document.getElementById('tasks') as HTMLElement | null);
-  if (!container) return;
-  tasksContainerEl = container;
-
   if (action === 'edit') {
     openEditModal(task);
   } else if (action === 'delete') {
-    const handler = createDeleteHandler(task, container);
-    void handler();
+    await createDeleteHandler(task);
   }
 }
 
@@ -332,7 +251,7 @@ function openEditModal(task: TaskType) {
 }
 
 
-async function handleCreateTaskSubmit(ev: SubmitEvent, container: HTMLElement) {
+async function handleCreateTaskSubmit(ev: SubmitEvent) {
   ev.preventDefault();
   const form = ev.target as HTMLFormElement;
   const formData = new FormData(form);
@@ -354,7 +273,7 @@ async function handleCreateTaskSubmit(ev: SubmitEvent, container: HTMLElement) {
   try {
     await createTask(newTask);
     form.reset();
-    await renderTasks(container);
+    await renderTasks();
   } catch (e) {
     alert('Create error: ' + String(e));
   }
@@ -362,14 +281,14 @@ async function handleCreateTaskSubmit(ev: SubmitEvent, container: HTMLElement) {
 
 export function initUI() {
   document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('tasks') as HTMLElement | null;
+    const container = document.getElementById('tasks') as HTMLElement;
     const form = document.getElementById('task-form') as HTMLFormElement | null;
-    if (!container || !form) return;
+    if (!form) return;
     tasksContainerEl = container;
 
-    renderTasks(container).catch((e) => console.error(e));
+    renderTasks().catch((e) => console.error(e));
 
-    form.addEventListener('submit', (ev) => handleCreateTaskSubmit(ev, container));
+    form.addEventListener('submit', handleCreateTaskSubmit);
     container.addEventListener('click', handleTasksContainerClick);
   });
 }
