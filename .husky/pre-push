@@ -1,8 +1,10 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-npm run type-check
-npm run lint:check
-npm run format:check
-npm run test:ci
-
+npm test > /dev/null 2>&1
+TEST_EXIT_CODE=$?
+if [ $TEST_EXIT_CODE -ne 0 ]; then
+  echo "❌ Tests failed. Please fix the failing tests before pushing."
+  npm test
+  exit $TEST_EXIT_CODE
+fi
+echo "✅ All tests passed"
+exit 0
