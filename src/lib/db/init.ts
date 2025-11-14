@@ -1,6 +1,7 @@
 import { sequelize } from './sequelize';
 import { ensurePostgresEnums } from './postgres-enums';
 import { runMigrations } from './run-migrations';
+import { connectRedis } from '../cache/redis';
 import '@/lib/models';
 
 let isInitialized = false;
@@ -23,6 +24,8 @@ export async function initializeDatabase(): Promise<void> {
       if (sequelize.getDialect() === 'postgres') {
         await ensurePostgresEnums();
       }
+
+      await connectRedis();
 
       if (process.env.RUN_MIGRATIONS === 'true') {
         try {

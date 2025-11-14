@@ -4,11 +4,13 @@ import React from 'react';
 import { AppBar, Toolbar, Typography, Button, Stack } from '@mui/material';
 import { Logout as LogoutIcon } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
+import { removeToken } from '@/lib/auth/token-storage';
 
 export const Header: React.FC = () => {
   const router = useRouter();
 
   const handleLogout = () => {
+    removeToken();
     router.push('/login');
   };
 

@@ -2,6 +2,13 @@ import { Task, User } from '../models/index';
 import type { Status, Priority } from '@/types';
 import type { WhereOptions } from 'sequelize';
 import { Op } from 'sequelize';
+import {
+  getCache,
+  setCache,
+  deleteCache,
+  deleteCachePattern,
+} from '../cache/redis';
+import { CacheKeys, CacheTTL } from '../cache/cache-keys';
 
 export interface CreateTaskData {
   title: string;
@@ -28,10 +35,34 @@ export interface TaskFilters {
   priority?: Priority;
   createdFrom?: string;
   createdTo?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedTasks {
+  tasks: Task[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
 }
 
 export class TasksService {
-  async getAllTasks(filters?: TaskFilters) {
+  private getFiltersKey(filters?: TaskFilters): string {
+    if (!filters) return 'all';
+    const parts: string[] = [];
+    if (filters.status) parts.push(`status:${filters.status}`);
+    if (filters.priority) parts.push(`priority:${filters.priority}`);
+    if (filters.createdFrom) parts.push(`from:${filters.createdFrom}`);
+    if (filters.createdTo) parts.push(`to:${filters.createdTo}`);
+    return parts.length > 0 ? parts.join('|') : 'all';
+  }
+
+  async getAllTasks(filters?: TaskFilters): Promise<Task[] | PaginatedTasks> {
     const where: WhereOptions = {};
 
     if (filters?.status) {
@@ -62,29 +93,94 @@ export class TasksService {
       }
     }
 
-    return await Task.findAll({
+    const page = filters?.page || 1;
+    const limit = filters?.limit || 20;
+    const offset = (page - 1) * limit;
+
+    const filtersKey = this.getFiltersKey(filters);
+    const cacheKey = filters?.page
+      ? CacheKeys.tasksPage(page, limit, filtersKey)
+      : CacheKeys.tasks(filtersKey);
+
+    const cached = await getCache<Task[] | PaginatedTasks>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    if (filters?.page) {
+      const { count, rows } = await Task.findAndCountAll({
+        where: Object.keys(where).length > 0 ? where : undefined,
+        include: [
+          {
+            model: User,
+            as: 'assignee',
+            attributes: ['id', 'firstname', 'lastname', 'email'],
+            required: false,
+          },
+        ],
+        order: [['createdAt', 'DESC']],
+        limit,
+        offset,
+        distinct: true,
+      });
+
+      const totalPages = Math.ceil(count / limit);
+      const result: PaginatedTasks = {
+        tasks: rows,
+        pagination: {
+          page,
+          limit,
+          total: count,
+          totalPages,
+          hasNext: page < totalPages,
+          hasPrev: page > 1,
+        },
+      };
+
+      await setCache(cacheKey, result, CacheTTL.tasksPage);
+      return result;
+    }
+
+    const tasks = await Task.findAll({
       where: Object.keys(where).length > 0 ? where : undefined,
       include: [
         {
           model: User,
           as: 'assignee',
           attributes: ['id', 'firstname', 'lastname', 'email'],
+          required: false,
         },
       ],
       order: [['createdAt', 'DESC']],
     });
+
+    await setCache(cacheKey, tasks, CacheTTL.tasks);
+    return tasks;
   }
 
   async getTaskById(id: number) {
-    return await Task.findByPk(id, {
+    const cacheKey = CacheKeys.task(id);
+    const cached = await getCache<Task>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const task = await Task.findByPk(id, {
       include: [
         {
           model: User,
           as: 'assignee',
           attributes: ['id', 'firstname', 'lastname', 'email'],
+          required: false,
         },
       ],
     });
+
+    if (task) {
+      await setCache(cacheKey, task, CacheTTL.task);
+    }
+
+    return task;
   }
 
   async createTask(data: CreateTaskData) {
@@ -98,6 +194,7 @@ export class TasksService {
       assigneeId: data.assigneeId || null,
     });
 
+    await deleteCachePattern('tasks:*');
     return await this.getTaskById(task.id);
   }
 
@@ -130,6 +227,8 @@ export class TasksService {
     }
 
     await task.save();
+    await deleteCache(CacheKeys.task(id));
+    await deleteCachePattern('tasks:*');
     return await this.getTaskById(task.id);
   }
 
@@ -139,6 +238,8 @@ export class TasksService {
       return false;
     }
     await task.destroy();
+    await deleteCache(CacheKeys.task(id));
+    await deleteCachePattern('tasks:*');
     return true;
   }
 }

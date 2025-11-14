@@ -1,4 +1,5 @@
 import type { Task, Status, Priority } from '@/types';
+import { getAuthHeaders } from '@/lib/auth/token-storage';
 
 const API_BASE_URL = '/api/tasks';
 
@@ -78,13 +79,43 @@ export async function fetchTasks(filters?: TaskFilters): Promise<Task[]> {
     ? `${API_BASE_URL}?${queryParams.toString()}`
     : API_BASE_URL;
 
-  const response = await fetch(url);
-  const data = await handleResponse<ApiTaskResponse[]>(response);
-  return data.map(mapApiTask);
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+  });
+  const data = await handleResponse<
+    ApiTaskResponse[] | { tasks: ApiTaskResponse[]; pagination: unknown }
+  >(response);
+
+  let tasksArray: ApiTaskResponse[];
+  if (Array.isArray(data)) {
+    tasksArray = data;
+  } else if (
+    data &&
+    typeof data === 'object' &&
+    'tasks' in data &&
+    Array.isArray(data.tasks)
+  ) {
+    tasksArray = data.tasks;
+  } else {
+    console.error('Invalid response format:', data);
+    throw new Error(
+      'Invalid response format from API: expected array or paginated object'
+    );
+  }
+
+  return tasksArray.map(mapApiTask);
 }
 
 export async function fetchTaskById(id: number): Promise<Task> {
-  const response = await fetch(`${API_BASE_URL}/${id}`);
+  const response = await fetch(`${API_BASE_URL}/${id}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+  });
   const data = await handleResponse<ApiTaskResponse>(response);
   return mapApiTask(data);
 }
@@ -147,6 +178,7 @@ export async function createTask(payload: CreateTaskPayload): Promise<Task> {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      ...getAuthHeaders(),
     },
     body: JSON.stringify(buildTaskBody(payload)),
   });
@@ -163,6 +195,7 @@ export async function updateTask(
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      ...getAuthHeaders(),
     },
     body: JSON.stringify(buildTaskBody(payload)),
   });
@@ -174,6 +207,10 @@ export async function updateTask(
 export async function deleteTask(id: number): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/${id}`, {
     method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
   });
 
   if (!response.ok) {
