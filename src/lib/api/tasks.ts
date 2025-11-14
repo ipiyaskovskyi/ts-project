@@ -42,8 +42,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
       if (errorBody?.error) {
         message = errorBody.error;
       }
-    } catch {
-    }
+    } catch {}
     throw new Error(message);
   }
 
@@ -184,8 +183,7 @@ export async function deleteTask(id: number): Promise<void> {
       if (errorBody?.error) {
         message = errorBody.error;
       }
-    } catch {
-    }
+    } catch {}
     throw new Error(message);
   }
 }

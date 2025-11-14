@@ -17,6 +17,7 @@ export interface UserAttributes {
   updatedAt?: Date;
 }
 
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 export interface UserCreationAttributes
   extends Optional<UserAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
 

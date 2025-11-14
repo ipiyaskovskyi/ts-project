@@ -42,14 +42,18 @@ export async function POST(request: NextRequest) {
   try {
     await initializeDatabase();
 
-    const body = await request.json();
+    const body = await request.json().catch(() => ({}));
     const validation = createTaskSchema.safeParse(body);
 
     if (!validation.success) {
       const firstError = validation.error.issues[0];
       let errorMessage = firstError?.message || 'Validation failed';
 
-      if (errorMessage === 'Required') {
+      if (
+        errorMessage === 'Required' ||
+        errorMessage.includes('expected string, received undefined') ||
+        (firstError?.path?.includes('title') && !body.title)
+      ) {
         errorMessage = 'Title is required and must be a non-empty string';
       } else if (errorMessage.includes('Invalid enum value')) {
         if (firstError?.path?.includes('status')) {

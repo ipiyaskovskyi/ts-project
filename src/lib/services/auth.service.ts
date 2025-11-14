@@ -31,6 +31,7 @@ export class AuthService {
       password: hashedPassword,
     });
 
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     const { password: _password, ...userWithoutPassword } = user.toJSON();
     return userWithoutPassword as Omit<UserAttributes, 'password'>;
   }
@@ -46,6 +47,7 @@ export class AuthService {
       throw new Error('Invalid email or password');
     }
 
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     const { password: _password, ...userWithoutPassword } = user.toJSON();
     return userWithoutPassword as Omit<UserAttributes, 'password'>;
   }

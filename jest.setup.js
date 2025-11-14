@@ -14,6 +14,15 @@ if (typeof global.Request === 'undefined') {
       this.headers = new Headers(init.headers);
       this.body = init.body;
     }
+    async json() {
+      if (!this.body) return {};
+      return typeof this.body === 'string' ? JSON.parse(this.body) : this.body;
+    }
+    async text() {
+      return typeof this.body === 'string'
+        ? this.body
+        : JSON.stringify(this.body || '');
+    }
   };
 }
 
@@ -21,9 +30,19 @@ global.Headers = class Headers {
   constructor(init = {}) {
     this._headers = {};
     if (init) {
-      Object.entries(init).forEach(([key, value]) => {
-        this._headers[key.toLowerCase()] = value;
-      });
+      if (init instanceof Headers) {
+        init.forEach((value, key) => {
+          this._headers[key.toLowerCase()] = value;
+        });
+      } else if (Array.isArray(init)) {
+        init.forEach(([key, value]) => {
+          this._headers[key.toLowerCase()] = value;
+        });
+      } else {
+        Object.entries(init).forEach(([key, value]) => {
+          this._headers[key.toLowerCase()] = value;
+        });
+      }
     }
   }
   get(name) {
@@ -34,6 +53,27 @@ global.Headers = class Headers {
   }
   has(name) {
     return name.toLowerCase() in this._headers;
+  }
+  forEach(callback) {
+    Object.entries(this._headers).forEach(([key, value]) => {
+      callback(value, key, this);
+    });
+  }
+  *entries() {
+    for (const [key, value] of Object.entries(this._headers)) {
+      yield [key, value];
+    }
+  }
+  keys() {
+    const keys = Object.keys(this._headers);
+    return keys[Symbol.iterator] ? keys[Symbol.iterator]() : keys;
+  }
+  values() {
+    const values = Object.values(this._headers);
+    return values[Symbol.iterator] ? values[Symbol.iterator]() : values;
+  }
+  [Symbol.iterator]() {
+    return this.entries();
   }
 };
 
@@ -52,5 +92,14 @@ global.Response = class Response {
     return typeof this.body === 'string'
       ? this.body
       : JSON.stringify(this.body);
+  }
+  static json(body, init = {}) {
+    return new Response(JSON.stringify(body), {
+      ...init,
+      headers: {
+        'Content-Type': 'application/json',
+        ...init.headers,
+      },
+    });
   }
 };

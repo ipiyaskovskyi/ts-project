@@ -27,16 +27,18 @@ function createMockRequest(
   body?: Record<string, unknown>
 ): NextRequest {
   const fullUrl = `http://localhost:3000${url}`;
-  const requestInit: {
-    method: string;
-    body?: string;
-    headers?: Record<string, string>;
-  } = {
+  const headers = new Headers();
+  if (body) {
+    headers.set('Content-Type', 'application/json');
+  }
+  const requestInit: RequestInit = {
     method,
-    ...(body && { body: JSON.stringify(body) }),
-    ...(body && { headers: { 'Content-Type': 'application/json' } }),
+    headers,
+    ...(body && {
+      body: JSON.stringify(body),
+    }),
   };
-  const request = new NextRequest(fullUrl, requestInit as any);
+  const request = new NextRequest(fullUrl, requestInit);
   return request;
 }
 
