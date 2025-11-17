@@ -27,12 +27,9 @@ const CreateTaskForm = () => {
       await createTask(data);
       setSuccessMessage('Task created successfully!');
       reset();
-      // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
-      console.error('Error creating task:', error);
       setErrorMessage('Failed to create task. Please try again.');
-      // Clear error message after 5 seconds
       setTimeout(() => setErrorMessage(null), 5000);
     }
   };
