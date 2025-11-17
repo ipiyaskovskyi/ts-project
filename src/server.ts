@@ -1,7 +1,8 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import taskRoutes from './routes/task.routes.js';
+import { AppError } from './lib/errors.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,12 +14,12 @@ app.use(express.json());
 app.use(taskRoutes);
 
 
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: AppError, _: Request, res: Response) => {
   console.error('Error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+  res.status(err.statusCode || 500).send(err.message || 'Internal server error');
 });
 
-app.use((req: Request, res: Response) => {
+app.use((_: Request, res: Response) => {
   res.status(404).json({ error: 'Route not found' });
 });
 

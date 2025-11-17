@@ -20,12 +20,7 @@ export type CreateTaskInput = {
   priority?: Priority,
 }
 
-export type UpdateTaskInput = {
-  title?: string,
-  description?: string,
-  status?: Status,
-  priority?: Priority,
-}
+export type UpdateTaskInput = Partial<CreateTaskInput>
 
 export type TaskFilters = {
   createdAt?: DateString,

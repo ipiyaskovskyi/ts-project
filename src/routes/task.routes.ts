@@ -1,4 +1,4 @@
-import express, { Router, Request, Response } from 'express';
+import express, { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import {
   getAllTasks,
@@ -25,7 +25,12 @@ const updateTaskSchema = z.object({
   description: z.string().optional(),
   status: taskStatusEnum.optional(),
   priority: taskPriorityEnum.optional(),
-});
+}).strict().refine(
+  (data) => !('id' in data) && !('createdAt' in data),
+  {
+    message: 'Fields id and createdAt cannot be updated',
+  }
+);
 
 const queryFiltersSchema = z.object({
   createdAt: z.string().optional(),
@@ -34,7 +39,7 @@ const queryFiltersSchema = z.object({
 });
 
 const validateBody = (schema: z.ZodSchema) => {
-  return (req: any, res: any, next: any) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     try {
       schema.parse(req.body);
       next();
@@ -51,7 +56,7 @@ const validateBody = (schema: z.ZodSchema) => {
 };
 
 const validateQuery = (schema: z.ZodSchema) => {
-  return (req: any, res: any, next: any) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     try {
       schema.parse(req.query);
       next();

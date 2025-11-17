@@ -1,4 +1,5 @@
 import { Task, CreateTaskInput, UpdateTaskInput, TaskFilters } from '../types/task.types.js';
+import { AppError } from '../lib/errors.js';
 
 class TaskService {
   private tasks: Task[] = [];
@@ -58,13 +59,15 @@ class TaskService {
     const taskIndex = this.tasks.findIndex(task => task.id === id);
 
     if (taskIndex === -1) {
-      throw new Error('Task not found');
+      throw new AppError('Task not found', 404);
     }
 
     const task = this.tasks[taskIndex];
     const updatedTask: Task = {
       ...task,
       ...input,
+      id: task.id,
+      createdAt: task.createdAt,
       updatedAt: new Date(),
     };
 
