@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { taskSchema, type TaskFormData } from '../schemas/taskSchema';
@@ -6,6 +7,9 @@ import './CreateTaskForm.css';
 
 
 const CreateTaskForm = () => {
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -18,17 +22,34 @@ const CreateTaskForm = () => {
 
   const onSubmit = async (data: TaskFormData) => {
     try {
+      setErrorMessage(null);
+      setSuccessMessage(null);
       await createTask(data);
+      setSuccessMessage('Task created successfully!');
       reset();
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
       console.error('Error creating task:', error);
-      alert('Failed to create task. Please try again.');
+      setErrorMessage('Failed to create task. Please try again.');
+      // Clear error message after 5 seconds
+      setTimeout(() => setErrorMessage(null), 5000);
     }
   };
 
   return (
     <div className="create-task-form-container">
       <h2>Create New Task</h2>
+      {successMessage && (
+        <div className="message message-success">
+          {successMessage}
+        </div>
+      )}
+      {errorMessage && (
+        <div className="message message-error">
+          {errorMessage}
+        </div>
+      )}
       <form onSubmit={handleSubmit(onSubmit)} className="create-task-form">
         <div className="form-group">
           <label htmlFor="title" className="form-label">
