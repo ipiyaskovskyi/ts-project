@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getTask } from '../api';
-import type { TaskType } from '../types';
+import { getTask } from '../../../api/taskApi';
+import type { TaskType } from '../../../types/Task';
 import { ErrorMessage } from '../../../shared/components/ErrorMessage';
+import { formatDate, formatDateShort } from '../../../shared/utils/formatDate';
+import './TaskDetails.css';
 
 export default function TaskDetails() {
   const params = useParams();
@@ -15,45 +17,41 @@ export default function TaskDetails() {
       setError('Invalid task id');
       return;
     }
-    let cancelled = false;
     getTask(id)
       .then((t) => {
-        if (!cancelled) setTask(t);
+        setTask(t);
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'Unknown error');
+        setError(e instanceof Error ? e.message : 'Unknown error');
       });
-    return () => {
-      cancelled = true;
-    };
   }, [id]);
 
   if (error) {
     return <ErrorMessage message={`Failed to load task: ${error}`} />;
   }
   if (task === null) {
-    return <div>Loading...</div>;
+    return <div className="loading">Loading...</div>;
   }
 
   return (
-    <div>
-      <Link to="/tasks">Back</Link>
-      <h2 style={{ marginTop: 12 }}>{task.title}</h2>
-      {task.description && <p>{task.description}</p>}
-      <p>
+    <div className="task-details-container">
+      <Link to="/tasks" className="back-link">Back</Link>
+      <h2 className="task-details-title">{task.title}</h2>
+      {task.description && <p className="task-details-info">{task.description}</p>}
+      <p className="task-details-info">
         <strong>Status:</strong> {task.status ?? 'todo'}
       </p>
-      <p>
+      <p className="task-details-info">
         <strong>Priority:</strong> {task.priority ?? 'medium'}
       </p>
       {task.deadline && (
-        <p>
-          <strong>Deadline:</strong> {String(task.deadline)}
+        <p className="task-details-info">
+          <strong>Deadline:</strong> {formatDateShort(task.deadline)}
         </p>
       )}
       {task.createdAt && (
-        <p>
-          <strong>Created:</strong> {String(task.createdAt)}
+        <p className="task-details-info">
+          <strong>Created:</strong> {formatDate(task.createdAt)}
         </p>
       )}
     </div>

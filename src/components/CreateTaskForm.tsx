@@ -1,8 +1,8 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { taskSchema, type TaskFormData } from '../schemas/taskSchema';
 import { createTask } from '../api/taskApi';
-import type { TaskType } from '../types/Task';
 import './CreateTaskForm.css';
 
 
@@ -11,6 +11,9 @@ type CreateTaskFormProps = {
 };
 
 const CreateTaskForm = ({ onSuccess }: CreateTaskFormProps) => {
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -22,27 +25,40 @@ const CreateTaskForm = ({ onSuccess }: CreateTaskFormProps) => {
   });
 
   const onSubmit = async (data: TaskFormData) => {
+    setError(null);
+    setSuccess(null);
+    
     try {
-      const taskData: Omit<TaskType, 'id'> = {
-        title: data.title,
-        description: data.description || '',
-        status: data.status,
-        priority: data.priority,
-        deadline: data.deadline || undefined,
-      };
-
-      await createTask(taskData);
+      await createTask(data);
       reset();
+      setSuccess('Task created successfully!');
       if (onSuccess) onSuccess();
+      
+      setTimeout(() => {
+        setSuccess(null);
+      }, 3000);
     } catch (error) {
-      console.error('Error creating task:', error);
-      alert('Failed to create task. Please try again.');
+      setError('Failed to create task. Please try again.');
+      
+      setTimeout(() => {
+        setError(null);
+      }, 5000);
     }
   };
 
   return (
     <div className="create-task-form-container">
       <h2>Create New Task</h2>
+      {error && (
+        <div className="message message-error" role="alert">
+          {error}
+        </div>
+      )}
+      {success && (
+        <div className="message message-success" role="status">
+          {success}
+        </div>
+      )}
       <form onSubmit={handleSubmit(onSubmit)} className="create-task-form">
         <div className="form-group">
           <label htmlFor="title" className="form-label">
