@@ -8,7 +8,7 @@ export async function listTasks(): Promise<TaskType[]> {
   return res.json();
 }
 
-export async function getTask(id: number): Promise<TaskType> {
+export async function getTask(id: string): Promise<TaskType> {
   const res = await fetch(`${BASE}/${id}`);
   return res.json();
 }
@@ -28,7 +28,7 @@ export async function createTask(task: TaskFormData): Promise<TaskType> {
   return res.json();
 }
 
-export async function updateTask(id: number, patch: Partial<TaskType>): Promise<TaskType> {
+export async function updateTask(id: string, patch: Partial<TaskType>): Promise<TaskType> {
   const res = await fetch(`${BASE}/${id}`, {
     method: 'PATCH',
     headers: {
@@ -40,7 +40,7 @@ export async function updateTask(id: number, patch: Partial<TaskType>): Promise<
   return res.json();
 }
 
-export async function deleteTask(id: number): Promise<void> {
+export async function deleteTask(id: string): Promise<void> {
   const url = `${BASE}/${id}`;
   
   const res = await fetch(url, {

@@ -7,7 +7,7 @@ import './CreateTaskForm.css';
 
 
 type CreateTaskFormProps = {
-  onSuccess?: () => void;
+  onSuccess: () => void;
 };
 
 const CreateTaskForm = ({ onSuccess }: CreateTaskFormProps) => {
@@ -32,12 +32,12 @@ const CreateTaskForm = ({ onSuccess }: CreateTaskFormProps) => {
       await createTask(data);
       reset();
       setSuccess('Task created successfully!');
-      if (onSuccess) onSuccess();
+      onSuccess();
       
       setTimeout(() => {
         setSuccess(null);
       }, 3000);
-    } catch (error) {
+    } catch {
       setError('Failed to create task. Please try again.');
       
       setTimeout(() => {

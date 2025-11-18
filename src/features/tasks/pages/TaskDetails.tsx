@@ -8,12 +8,12 @@ import './TaskDetails.css';
 
 export default function TaskDetails() {
   const params = useParams();
-  const id = Number(params.id);
+  const id = params.id;
   const [task, setTask] = useState<TaskType | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!Number.isFinite(id)) {
+    if (!id) {
       setError('Invalid task id');
       return;
     }

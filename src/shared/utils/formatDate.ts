@@ -17,7 +17,7 @@ export function formatDate(dateString: string): string {
 
 export function formatDateShort(dateString: string): string {
   const date = new Date(dateString);
-  ą
+
   if (isNaN(date.getTime())) {
     return dateString;
   }

@@ -86,6 +86,15 @@
       "priority": "low",
       "deadline": "2025-11-01",
       "createdAt": "2025-10-30T18:08:01.471Z"
+    },
+    {
+      "id": "d6a8",
+      "title": "Demo Task",
+      "description": "Create new task",
+      "status": "todo",
+      "priority": "low",
+      "deadline": "2025-11-30",
+      "createdAt": "2025-11-18T14:39:43.479Z"
     }
   ]
 }
