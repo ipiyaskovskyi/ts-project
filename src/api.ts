@@ -15,17 +15,19 @@ export async function getTask(id: number): Promise<TaskType> {
 }
 
 export async function createTask(task: Omit<TaskType, 'id'>): Promise<TaskType> {
-  const toSend = {
-		...task,
-		createdAt: new Date().toISOString()
-	};
   const res = await fetch(BASE, {
     method: 'POST',
     headers: {
-			'Content-Type': 'application/json'
-		},
-    body: JSON.stringify(toSend),
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(task),
   });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Failed to create task');
+  }
+
   const data = await res.json();
   return { ...data, id: Number(data.id) } as TaskType;
 }

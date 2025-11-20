@@ -1,6 +1,60 @@
 import { createTask, deleteTask, listTasks, updateTask } from "./api";
 import type { Priority, Status, TaskType, DateString } from "./dto/Task";
 
+function showMessage(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') {
+  const toastContainer = getOrCreateToastContainer();
+  
+  const toastId = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const bgClass = {
+    success: 'bg-success',
+    error: 'bg-danger',
+    warning: 'bg-warning',
+    info: 'bg-info'
+  }[type];
+
+  const toastEl = document.createElement('div');
+  toastEl.id = toastId;
+  toastEl.className = `toast ${bgClass} text-white`;
+  toastEl.setAttribute('role', 'alert');
+  toastEl.setAttribute('aria-live', 'assertive');
+  toastEl.setAttribute('aria-atomic', 'true');
+  toastEl.innerHTML = `
+    <div class="toast-header ${bgClass} text-white">
+      <strong class="me-auto">${type === 'error' ? 'Error' : type === 'success' ? 'Success' : type === 'warning' ? 'Warning' : 'Info'}</strong>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+      ${message}
+    </div>
+  `;
+
+  toastContainer.appendChild(toastEl);
+
+  const toast = window.bootstrap ? new window.bootstrap.Toast(toastEl, {
+    autohide: true,
+    delay: type === 'error' ? 5000 : 3000
+  }) : null;
+
+  if (toast) {
+    toast.show();
+    toastEl.addEventListener('hidden.bs.toast', () => {
+      toastEl.remove();
+    });
+  }
+}
+
+function getOrCreateToastContainer(): HTMLElement {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+    container.style.zIndex = '9999';
+    document.body.appendChild(container);
+  }
+  return container;
+}
+
 function formatDate(date?: DateString) {
   if (!date) return '';
   const d = new Date(date);
@@ -32,15 +86,17 @@ async function fetchTasks(): Promise<TaskType[]> {
 }
 
 function createDeleteHandler(task: TaskType, container: HTMLElement) {
-  return async () => {
+  return () => {
     if (!task.id) return;
-    if (!confirm('Delete task?')) return;
-    try {
-      await deleteTask(task.id);
-      await renderTasks(container);
-    } catch (e) {
-      alert('Delete error: ' + String(e));
-    }
+    openDeleteModal(task.id, async () => {
+      try {
+        await deleteTask(task.id!);
+        await renderTasks(container);
+        showMessage('Task deleted successfully', 'success');
+      } catch (e) {
+        showMessage('Delete error: ' + String(e), 'error');
+      }
+    });
   };
 }
 
@@ -130,6 +186,9 @@ async function renderTasks(container: HTMLElement) {
 
 let editModalInstance: any = null;
 let editModalEl: HTMLElement | null = null;
+let deleteModalInstance: any = null;
+let deleteModalEl: HTMLElement | null = null;
+let deleteTaskCallback: (() => Promise<void>) | null = null;
 
 function validateTaskData(data: Record<string, FormDataEntryValue>): string | null {
   const title = (data.title as string || '').trim();
@@ -158,7 +217,7 @@ async function handleEditTaskSubmit(ev: SubmitEvent) {
   
   const validationError = validateTaskData(data);
   if (validationError) {
-    alert(validationError);
+    showMessage(validationError, 'warning');
     return;
   }
 
@@ -176,8 +235,9 @@ async function handleEditTaskSubmit(ev: SubmitEvent) {
     editModalInstance.hide();
     const container = document.getElementById('tasks')!;
     await renderTasks(container);
+    showMessage('Task updated successfully', 'success');
   } catch (e) {
-    alert('Update error: ' + String(e));
+    showMessage('Update error: ' + String(e), 'error');
   }
 }
 
@@ -262,6 +322,59 @@ function openEditModal(task: TaskType) {
   editModalInstance.show();
 }
 
+function ensureDeleteModal() {
+  if (deleteModalEl) return deleteModalEl;
+  const tpl = document.createElement('div');
+  tpl.innerHTML = `
+    <div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Delete task</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to delete this task? This action cannot be undone.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-danger" id="confirm-delete-btn">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  deleteModalEl = tpl.firstElementChild as HTMLElement;
+  document.body.appendChild(deleteModalEl);
+
+  const modalEl = document.getElementById('deleteTaskModal')!;
+  deleteModalInstance = window.bootstrap ? new window.bootstrap.Modal(modalEl) : null;
+
+  const confirmBtn = document.getElementById('confirm-delete-btn')!;
+  confirmBtn.addEventListener('click', () => {
+    if (deleteTaskCallback) {
+      deleteTaskCallback();
+      deleteTaskCallback = null;
+    }
+    if (deleteModalInstance) {
+      deleteModalInstance.hide();
+    }
+  });
+
+  return deleteModalEl;
+}
+
+function openDeleteModal(_taskId: number, callback: () => Promise<void>) {
+  ensureDeleteModal();
+  deleteTaskCallback = callback;
+
+  if (!deleteModalInstance) {
+    const modalElDom = document.getElementById('deleteTaskModal')!;
+    deleteModalInstance = window.bootstrap ? new window.bootstrap.Modal(modalElDom) : null;
+  }
+  deleteModalInstance.show();
+}
+
 
 async function handleCreateTaskSubmit(ev: SubmitEvent, container: HTMLElement) {
   ev.preventDefault();
@@ -271,7 +384,7 @@ async function handleCreateTaskSubmit(ev: SubmitEvent, container: HTMLElement) {
   
   const validationError = validateTaskData(data);
   if (validationError) {
-    alert(validationError);
+    showMessage(validationError, 'warning');
     return;
   }
 
@@ -286,8 +399,9 @@ async function handleCreateTaskSubmit(ev: SubmitEvent, container: HTMLElement) {
     await createTask(newTask);
     form.reset();
     await renderTasks(container);
+    showMessage('Task created successfully', 'success');
   } catch (e) {
-    alert('Create error: ' + String(e));
+    showMessage('Create error: ' + String(e), 'error');
   }
 }
 

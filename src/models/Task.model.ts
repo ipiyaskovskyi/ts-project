@@ -11,8 +11,8 @@ import {
   UpdatedAt,
 } from 'sequelize-typescript';
 import type { Optional } from 'sequelize';
-import { User } from './User.model.js';
-import type { Status, Priority } from '../dto/Task.js';
+import { User } from './User.model';
+import type { Status, Priority } from '../dto/Task';
 
 export interface TaskAttributes {
   id: number;

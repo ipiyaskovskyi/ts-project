@@ -10,12 +10,16 @@ import {
   HasMany,
 } from 'sequelize-typescript';
 import type { Optional } from 'sequelize';
-import { Task } from './Task.model.js';
+import { Task } from './Task.model';
 
 export interface UserAttributes {
   id: number;
-  name: string;
+  firstname: string;
+  lastname: string;
   email: string;
+  password: string;
+  mobilePhone?: string | null;
+  country?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -38,7 +42,13 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   @Column({
     type: DataType.STRING,
   })
-  declare name: string;
+  declare firstname: string;
+
+  @AllowNull(false)
+  @Column({
+    type: DataType.STRING,
+  })
+  declare lastname: string;
 
   @AllowNull(false)
   @Unique
@@ -46,6 +56,24 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
     type: DataType.STRING,
   })
   declare email: string;
+
+  @AllowNull(false)
+  @Column({
+    type: DataType.STRING,
+  })
+  declare password: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  declare mobilePhone?: string | null;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  declare country?: string | null;
 
   @CreatedAt
   @Column({ field: 'createdAt', type: DataType.DATE })
