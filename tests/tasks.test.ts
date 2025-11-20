@@ -55,16 +55,29 @@ describe('GET /tasks', () => {
     expect(response.status).toBe(200);
     expect(response.body).toHaveLength(2);
     
-    const task1Response = response.body.find((t: any) => t.id === task1.id);
+    interface TaskResponse {
+      id: number;
+      title: string;
+      assignee: { id: number; firstname: string; lastname: string } | null;
+    }
+    
+    const task1Response = response.body.find((t: unknown) => {
+      return typeof t === 'object' && t !== null && 'id' in t && (t as { id: number }).id === task1.id;
+    }) as TaskResponse | undefined;
     expect(task1Response).toBeDefined();
+    if (!task1Response) return;
     expect(task1Response.title).toBe('Task 1');
     expect(task1Response.assignee).toBeDefined();
+    if (!task1Response.assignee) return;
     expect(task1Response.assignee.id).toBe(user.id);
     expect(task1Response.assignee.firstname).toBe('Test');
     expect(task1Response.assignee.lastname).toBe('User');
     
-    const task2Response = response.body.find((t: any) => t.id === task2.id);
+    const task2Response = response.body.find((t: unknown) => {
+      return typeof t === 'object' && t !== null && 'id' in t && (t as { id: number }).id === task2.id;
+    }) as TaskResponse | undefined;
     expect(task2Response).toBeDefined();
+    if (!task2Response) return;
     expect(task2Response.title).toBe('Task 2');
     expect(task2Response.assignee).toBeNull();
   });

@@ -88,9 +88,10 @@ async function fetchTasks(): Promise<TaskType[]> {
 function createDeleteHandler(task: TaskType, container: HTMLElement) {
   return () => {
     if (!task.id) return;
-    openDeleteModal(task.id, async () => {
+    const taskId = task.id;
+    openDeleteModal(taskId, async () => {
       try {
-        await deleteTask(task.id!);
+        await deleteTask(taskId);
         await renderTasks(container);
         showMessage('Task deleted successfully', 'success');
       } catch (e) {
@@ -184,9 +185,9 @@ async function renderTasks(container: HTMLElement) {
   container.appendChild(list);
 }
 
-let editModalInstance: any = null;
+let editModalInstance: { show(): void; hide(): void } | null = null;
 let editModalEl: HTMLElement | null = null;
-let deleteModalInstance: any = null;
+let deleteModalInstance: { show(): void; hide(): void } | null = null;
 let deleteModalEl: HTMLElement | null = null;
 let deleteTaskCallback: (() => Promise<void>) | null = null;
 
@@ -232,8 +233,12 @@ async function handleEditTaskSubmit(ev: SubmitEvent) {
   };
   try {
     await updateTask(id, patch);
-    editModalInstance.hide();
-    const container = document.getElementById('tasks')!;
+    editModalInstance?.hide();
+    const container = document.getElementById('tasks');
+    if (!container) {
+      showMessage('Tasks container not found', 'error');
+      return;
+    }
     await renderTasks(container);
     showMessage('Task updated successfully', 'success');
   } catch (e) {
@@ -296,7 +301,10 @@ function ensureEditModal() {
   editModalEl = tpl.firstElementChild as HTMLElement;
   document.body.appendChild(editModalEl);
 
-  const modalEl = document.getElementById('editTaskModal')!;
+  const modalEl = document.getElementById('editTaskModal');
+  if (!modalEl) {
+    throw new Error('Edit modal element not found');
+  }
   editModalInstance = window.bootstrap ? new window.bootstrap.Modal(modalEl) : null;
 
   const editForm = document.getElementById('edit-task-form') as HTMLFormElement;
@@ -316,10 +324,14 @@ function openEditModal(task: TaskType) {
   (form.elements.namedItem('deadline') as HTMLInputElement).value = toDateInputValue(task.deadline);
 
   if (!editModalInstance) {
-    const modalElDom = document.getElementById('editTaskModal')!;
+    const modalElDom = document.getElementById('editTaskModal');
+    if (!modalElDom) {
+      showMessage('Edit modal not found', 'error');
+      return;
+    }
     editModalInstance = window.bootstrap ? new window.bootstrap.Modal(modalElDom) : null;
   }
-  editModalInstance.show();
+  editModalInstance?.show();
 }
 
 function ensureDeleteModal() {
@@ -347,10 +359,16 @@ function ensureDeleteModal() {
   deleteModalEl = tpl.firstElementChild as HTMLElement;
   document.body.appendChild(deleteModalEl);
 
-  const modalEl = document.getElementById('deleteTaskModal')!;
+  const modalEl = document.getElementById('deleteTaskModal');
+  if (!modalEl) {
+    throw new Error('Delete modal element not found');
+  }
   deleteModalInstance = window.bootstrap ? new window.bootstrap.Modal(modalEl) : null;
 
-  const confirmBtn = document.getElementById('confirm-delete-btn')!;
+  const confirmBtn = document.getElementById('confirm-delete-btn');
+  if (!confirmBtn) {
+    throw new Error('Confirm delete button not found');
+  }
   confirmBtn.addEventListener('click', () => {
     if (deleteTaskCallback) {
       deleteTaskCallback();
@@ -369,10 +387,14 @@ function openDeleteModal(_taskId: number, callback: () => Promise<void>) {
   deleteTaskCallback = callback;
 
   if (!deleteModalInstance) {
-    const modalElDom = document.getElementById('deleteTaskModal')!;
+    const modalElDom = document.getElementById('deleteTaskModal');
+    if (!modalElDom) {
+      showMessage('Delete modal not found', 'error');
+      return;
+    }
     deleteModalInstance = window.bootstrap ? new window.bootstrap.Modal(modalElDom) : null;
   }
-  deleteModalInstance.show();
+  deleteModalInstance?.show();
 }
 
 
