@@ -1,8 +1,8 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
-import taskRoutes from './routes/task.routes.js';
-import { AppError } from './lib/errors.js';
+import taskRoutes from './routes/task.routes';
+import { AppError } from './lib/errors';
 
 const app = express();
 const PORT = process.env.PORT || 3000;

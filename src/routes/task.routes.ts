@@ -33,7 +33,18 @@ const updateTaskSchema = z.object({
 );
 
 const queryFiltersSchema = z.object({
-  createdAt: z.string().optional(),
+  createdAt: z.string().optional().refine(
+    (val) => {
+      if (!val) return true;
+
+      const date = new Date(val);
+
+      return !isNaN(date.getTime());
+    },
+    {
+      message: 'createdAt must be a valid date',
+    }
+  ),
   status: taskStatusEnum.optional(),
   priority: taskPriorityEnum.optional(),
 });
