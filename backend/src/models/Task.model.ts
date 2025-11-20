@@ -9,10 +9,10 @@ import {
   BelongsTo,
   CreatedAt,
   UpdatedAt,
-} from 'sequelize-typescript';
-import type { Optional } from 'sequelize';
-import { User } from './User.model.js';
-import type { Status, Priority } from '../dto/Task.js';
+} from "sequelize-typescript";
+import type { Optional } from "sequelize";
+import { User } from "./User.model";
+import type { Status, Priority } from "../dto/Task";
 
 export interface TaskAttributes {
   id: number;
@@ -27,13 +27,26 @@ export interface TaskAttributes {
 }
 
 export interface TaskCreationAttributes
-  extends Optional<TaskAttributes, 'id' | 'description' | 'status' | 'priority' | 'deadline' | 'assigneeId' | 'createdAt' | 'updatedAt'> {}
+  extends Optional<
+    TaskAttributes,
+    | "id"
+    | "description"
+    | "status"
+    | "priority"
+    | "deadline"
+    | "assigneeId"
+    | "createdAt"
+    | "updatedAt"
+  > {}
 
 @Table({
-  tableName: 'tasks',
+  tableName: "tasks",
   timestamps: true,
 })
-export class Task extends Model<TaskAttributes, TaskCreationAttributes> implements TaskAttributes {
+export class Task
+  extends Model<TaskAttributes, TaskCreationAttributes>
+  implements TaskAttributes
+{
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
@@ -54,16 +67,16 @@ export class Task extends Model<TaskAttributes, TaskCreationAttributes> implemen
   declare description?: string | null;
 
   @AllowNull(false)
-  @Default('todo')
+  @Default("todo")
   @Column({
-    type: DataType.ENUM('todo', 'in-progress', 'done'),
+    type: DataType.ENUM("todo", "in-progress", "done"),
   })
   declare status: Status;
 
   @AllowNull(false)
-  @Default('medium')
+  @Default("medium")
   @Column({
-    type: DataType.ENUM('low', 'medium', 'high'),
+    type: DataType.ENUM("low", "medium", "high"),
   })
   declare priority: Priority;
 
@@ -77,22 +90,21 @@ export class Task extends Model<TaskAttributes, TaskCreationAttributes> implemen
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
-    field: 'assigneeId',
+    field: "assigneeId",
   })
   declare assigneeId?: number | null;
 
   @BelongsTo(() => User, {
-    foreignKey: 'assigneeId',
-    as: 'assignee',
+    foreignKey: "assigneeId",
+    as: "assignee",
   })
   declare assignee?: User;
 
   @CreatedAt
-  @Column({ field: 'createdAt', type: DataType.DATE })
+  @Column({ field: "createdAt", type: DataType.DATE })
   declare readonly createdAt: Date;
 
   @UpdatedAt
-  @Column({ field: 'updatedAt', type: DataType.DATE })
+  @Column({ field: "updatedAt", type: DataType.DATE })
   declare readonly updatedAt: Date;
 }
-

@@ -1,5 +1,5 @@
-export type Status = 'todo' | 'in-progress' | 'done';
-export type Priority = 'low' | 'medium' | 'high';
+export type Status = "todo" | "in-progress" | "done";
+export type Priority = "low" | "medium" | "high";
 export type ISODateString = string;
 
 export interface TaskAssignee {
@@ -20,8 +20,9 @@ export interface Task {
   updatedAt?: ISODateString;
 }
 
-export type CreateTaskInput = Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'assignee'> & {
+export type CreateTaskInput = Omit<
+  Task,
+  "id" | "createdAt" | "updatedAt" | "assignee"
+> & {
   deadline?: ISODateString | null;
 };
-
-

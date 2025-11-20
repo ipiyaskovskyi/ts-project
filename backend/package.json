@@ -9,6 +9,8 @@
     "start": "node dist/server.js",
     "lint": "tsx scripts/lint.ts",
     "lint:staged": "tsx scripts/lint.ts --fix",
+    "format": "prettier --write \"src/**/*.{ts,js,json}\" \"tests/**/*.{ts,js}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,js,json}\" \"tests/**/*.{ts,js}\"",
     "test": "cross-env NODE_ENV=test jest",
     "clean": "rm -rf dist"
   },
@@ -40,6 +42,6 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.20.6",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^7.18.0"
+    "typescript-eslint": "^8.47.0"
   }
 }

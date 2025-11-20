@@ -1,5 +1,5 @@
-import { TasksPage } from './pages/TasksPage/TasksPage';
-import './App.css';
+import { TasksPage } from "./pages/TasksPage/TasksPage";
+import "./App.css";
 
 export function App() {
   return (
@@ -16,5 +16,3 @@ export function App() {
 }
 
 export default App;
-
-

@@ -1,13 +1,13 @@
-import 'reflect-metadata';
-import request from 'supertest';
-import { app } from '../src/server.js';
-import { sequelize, Task, User } from '../src/models/index.js';
+import "reflect-metadata";
+import request from "supertest";
+import { app } from "../src/server";
+import { sequelize, Task, User } from "../src/models/index";
 
 beforeAll(async () => {
   try {
     await sequelize.authenticate();
   } catch (error) {
-    console.error('Database authentication failed:', error);
+    console.error("Database authentication failed:", error);
   }
   await sequelize.sync({ force: true });
 });
@@ -21,465 +21,564 @@ beforeEach(async () => {
   await User.destroy({ where: {} });
 });
 
-describe('GET /tasks', () => {
-  it('should return empty array when no tasks exist', async () => {
-    const response = await request(app).get('/tasks');
+describe("GET /api/tasks", () => {
+  it("should return empty array when no tasks exist", async () => {
+    const response = await request(app).get("/api/tasks");
     expect(response.status).toBe(200);
     expect(response.body).toEqual([]);
   });
 
-  it('should return all tasks with assignee information', async () => {
+  it("should return all tasks with assignee information", async () => {
     const user = await User.create({
-      name: 'Test User',
-      email: 'test@example.com',
+      firstname: "Test",
+      lastname: "User",
+      email: "test@example.com",
+      password: "password123",
     });
 
     const task1 = await Task.create({
-      title: 'Task 1',
-      description: 'Description 1',
-      status: 'todo',
-      priority: 'high',
+      title: "Task 1",
+      description: "Description 1",
+      status: "todo",
+      priority: "high",
       assigneeId: user.id,
     });
 
     const task2 = await Task.create({
-      title: 'Task 2',
-      description: 'Description 2',
-      status: 'in-progress',
-      priority: 'medium',
+      title: "Task 2",
+      description: "Description 2",
+      status: "in-progress",
+      priority: "medium",
     });
 
-    const response = await request(app).get('/tasks');
+    const response = await request(app).get("/api/tasks");
     expect(response.status).toBe(200);
     expect(response.body).toHaveLength(2);
 
-    const task1Response = response.body.find((t: any) => t.id === task1.id);
-    expect(task1Response).toBeDefined();
-    expect(task1Response.title).toBe('Task 1');
-    expect(task1Response.assignee).toBeDefined();
-    expect(task1Response.assignee.id).toBe(user.id);
-    expect(task1Response.assignee.name).toBe('Test User');
+    interface TaskResponse {
+      id: number;
+      title: string;
+      assignee: { id: number; firstname: string; lastname: string } | null;
+    }
 
-    const task2Response = response.body.find((t: any) => t.id === task2.id);
+    const task1Response = response.body.find((t: unknown) => {
+      return (
+        typeof t === "object" &&
+        t !== null &&
+        "id" in t &&
+        (t as { id: number }).id === task1.id
+      );
+    }) as TaskResponse | undefined;
+    expect(task1Response).toBeDefined();
+    if (!task1Response) return;
+    expect(task1Response.title).toBe("Task 1");
+    expect(task1Response.assignee).toBeDefined();
+    if (!task1Response.assignee) return;
+    expect(task1Response.assignee.id).toBe(user.id);
+    expect(task1Response.assignee.firstname).toBe("Test");
+    expect(task1Response.assignee.lastname).toBe("User");
+
+    const task2Response = response.body.find((t: unknown) => {
+      return (
+        typeof t === "object" &&
+        t !== null &&
+        "id" in t &&
+        (t as { id: number }).id === task2.id
+      );
+    }) as TaskResponse | undefined;
     expect(task2Response).toBeDefined();
-    expect(task2Response.title).toBe('Task 2');
+    if (!task2Response) return;
+    expect(task2Response.title).toBe("Task 2");
     expect(task2Response.assignee).toBeNull();
   });
 });
 
-describe('GET /tasks/:id', () => {
-  it('should return 400 for invalid task ID', async () => {
-    const response = await request(app).get('/tasks/invalid');
+describe("GET /api/tasks/:id", () => {
+  it("should return 400 for invalid task ID", async () => {
+    const response = await request(app).get("/api/tasks/invalid");
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Invalid task ID');
+    expect(response.body.error).toBe("Invalid task ID");
   });
 
-  it('should return 404 when task does not exist', async () => {
-    const response = await request(app).get('/tasks/999');
+  it("should return 404 when task does not exist", async () => {
+    const response = await request(app).get("/api/tasks/999");
     expect(response.status).toBe(404);
-    expect(response.body.error).toBe('Task not found');
+    expect(response.body.error).toBe("Task not found");
   });
 
-  it('should return task with assignee details (200)', async () => {
+  it("should return task with assignee details (200)", async () => {
     const user = await User.create({
-      name: 'John Doe',
-      email: 'john@example.com',
+      firstname: "John",
+      lastname: "Doe",
+      email: "john@example.com",
+      password: "password123",
     });
 
     const task = await Task.create({
-      title: 'Test Task',
-      description: 'Test Description',
-      status: 'done',
-      priority: 'low',
-      deadline: new Date('2025-12-31'),
+      title: "Test Task",
+      description: "Test Description",
+      status: "done",
+      priority: "low",
+      deadline: new Date("2025-12-31"),
       assigneeId: user.id,
     });
 
-    const response = await request(app).get(`/tasks/${task.id}`);
+    const response = await request(app).get(`/api/tasks/${task.id}`);
     expect(response.status).toBe(200);
     expect(response.body.id).toBe(task.id);
-    expect(response.body.title).toBe('Test Task');
-    expect(response.body.description).toBe('Test Description');
-    expect(response.body.status).toBe('done');
-    expect(response.body.priority).toBe('low');
+    expect(response.body.title).toBe("Test Task");
+    expect(response.body.description).toBe("Test Description");
+    expect(response.body.status).toBe("done");
+    expect(response.body.priority).toBe("low");
     expect(response.body.assignee).toBeDefined();
     expect(response.body.assignee.id).toBe(user.id);
-    expect(response.body.assignee.name).toBe('John Doe');
-    expect(response.body.assignee.email).toBe('john@example.com');
+    expect(response.body.assignee.firstname).toBe("John");
+    expect(response.body.assignee.lastname).toBe("Doe");
+    expect(response.body.assignee.email).toBe("john@example.com");
   });
 
-  it('should return task without assignee when assigneeId is null', async () => {
+  it("should return task without assignee when assigneeId is null", async () => {
     const task = await Task.create({
-      title: 'Unassigned Task',
-      status: 'todo',
-      priority: 'medium',
+      title: "Unassigned Task",
+      status: "todo",
+      priority: "medium",
     });
 
-    const response = await request(app).get(`/tasks/${task.id}`);
+    const response = await request(app).get(`/api/tasks/${task.id}`);
     expect(response.status).toBe(200);
     expect(response.body.id).toBe(task.id);
     expect(response.body.assignee).toBeNull();
   });
 });
 
-describe('POST /tasks', () => {
-  it('should return 400 when title is missing', async () => {
-    const response = await request(app)
-      .post('/tasks')
-      .send({
-        description: 'Some description',
-        status: 'todo',
-        priority: 'high',
-      });
+describe("POST /api/tasks", () => {
+  it("should return 400 when title is missing", async () => {
+    const response = await request(app).post("/api/tasks").send({
+      description: "Some description",
+      status: "todo",
+      priority: "high",
+    });
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Title is required and must be a non-empty string');
+    expect(response.body.error).toBe("Validation error");
+    expect(response.body.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: ["title"],
+        }),
+      ]),
+    );
   });
 
-  it('should return 400 when title is empty string', async () => {
-    const response = await request(app)
-      .post('/tasks')
-      .send({
-        title: '   ',
-        description: 'Some description',
-      });
+  it("should return 400 when title is empty string", async () => {
+    const response = await request(app).post("/api/tasks").send({
+      title: "   ",
+      description: "Some description",
+    });
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Title is required and must be a non-empty string');
+    expect(response.body.error).toBe("Validation error");
+    expect(response.body.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: ["title"],
+        }),
+      ]),
+    );
   });
 
-  it('should return 400 when deadline is in the past', async () => {
+  it("should return 400 when deadline is in the past", async () => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
-    const response = await request(app)
-      .post('/tasks')
-      .send({
-        title: 'Test Task',
-        deadline: yesterday.toISOString(),
-      });
+    const response = await request(app).post("/api/tasks").send({
+      title: "Test Task",
+      deadline: yesterday.toISOString(),
+    });
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Deadline cannot be in the past');
+    expect(response.body.error).toBe("Validation error");
+    expect(response.body.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: ["deadline"],
+          message: "Deadline cannot be in the past",
+        }),
+      ]),
+    );
   });
 
-  it('should return 400 when status is invalid', async () => {
-    const response = await request(app)
-      .post('/tasks')
-      .send({
-        title: 'Test Task',
-        status: 'invalid-status',
-      });
+  it("should return 400 when status is invalid", async () => {
+    const response = await request(app).post("/api/tasks").send({
+      title: "Test Task",
+      status: "invalid-status",
+    });
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Invalid status value');
+    expect(response.body.error).toBe("Validation error");
+    expect(response.body.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: ["status"],
+        }),
+      ]),
+    );
   });
 
-  it('should return 400 when priority is invalid', async () => {
-    const response = await request(app)
-      .post('/tasks')
-      .send({
-        title: 'Test Task',
-        priority: 'invalid-priority',
-      });
+  it("should return 400 when priority is invalid", async () => {
+    const response = await request(app).post("/api/tasks").send({
+      title: "Test Task",
+      priority: "invalid-priority",
+    });
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Invalid priority value');
+    expect(response.body.error).toBe("Validation error");
+    expect(response.body.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: ["priority"],
+        }),
+      ]),
+    );
   });
 
-  it('should return 400 when assignee does not exist', async () => {
-    const response = await request(app)
-      .post('/tasks')
-      .send({
-        title: 'Test Task',
-        assigneeId: 999,
-      });
+  it("should return 400 when assignee does not exist", async () => {
+    const response = await request(app).post("/api/tasks").send({
+      title: "Test Task",
+      assigneeId: 999,
+    });
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Assignee not found');
+    expect(response.body.error).toBe("Validation error");
+    expect(response.body.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: ["assigneeId"],
+          message: "Assignee not found",
+        }),
+      ]),
+    );
   });
 
-  it('should create task successfully (201)', async () => {
+  it("should create task successfully (201)", async () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const response = await request(app)
-      .post('/tasks')
-      .send({
-        title: 'New Task',
-        description: 'Task description',
-        status: 'todo',
-        priority: 'high',
-        deadline: tomorrow.toISOString(),
-      });
+    const response = await request(app).post("/api/tasks").send({
+      title: "New Task",
+      description: "Task description",
+      status: "todo",
+      priority: "high",
+      deadline: tomorrow.toISOString(),
+    });
 
     expect(response.status).toBe(201);
     expect(response.body.id).toBeDefined();
-    expect(response.body.title).toBe('New Task');
-    expect(response.body.description).toBe('Task description');
-    expect(response.body.status).toBe('todo');
-    expect(response.body.priority).toBe('high');
+    expect(response.body.title).toBe("New Task");
+    expect(response.body.description).toBe("Task description");
+    expect(response.body.status).toBe("todo");
+    expect(response.body.priority).toBe("high");
     expect(response.body.assignee).toBeNull();
     expect(response.body.createdAt).toBeDefined();
   });
 
-  it('should create task with assignee successfully (201)', async () => {
+  it("should create task with assignee successfully (201)", async () => {
     const user = await User.create({
-      name: 'Jane Doe',
-      email: 'jane@example.com',
+      firstname: "Jane",
+      lastname: "Doe",
+      email: "jane@example.com",
+      password: "password123",
     });
 
-    const response = await request(app)
-      .post('/tasks')
-      .send({
-        title: 'Assigned Task',
-        description: 'Description',
-        status: 'in-progress',
-        priority: 'medium',
-        assigneeId: user.id,
-      });
+    const response = await request(app).post("/api/tasks").send({
+      title: "Assigned Task",
+      description: "Description",
+      status: "in-progress",
+      priority: "medium",
+      assigneeId: user.id,
+    });
 
     expect(response.status).toBe(201);
     expect(response.body.id).toBeDefined();
-    expect(response.body.title).toBe('Assigned Task');
+    expect(response.body.title).toBe("Assigned Task");
     expect(response.body.assignee).toBeDefined();
     expect(response.body.assignee.id).toBe(user.id);
-    expect(response.body.assignee.name).toBe('Jane Doe');
+    expect(response.body.assignee.firstname).toBe("Jane");
+    expect(response.body.assignee.lastname).toBe("Doe");
   });
 
-  it('should use default values when optional fields are not provided', async () => {
-    const response = await request(app)
-      .post('/tasks')
-      .send({
-        title: 'Minimal Task',
-      });
+  it("should use default values when optional fields are not provided", async () => {
+    const response = await request(app).post("/api/tasks").send({
+      title: "Minimal Task",
+    });
 
     expect(response.status).toBe(201);
-    expect(response.body.title).toBe('Minimal Task');
-    expect(response.body.status).toBe('todo');
-    expect(response.body.priority).toBe('medium');
+    expect(response.body.title).toBe("Minimal Task");
+    expect(response.body.status).toBe("todo");
+    expect(response.body.priority).toBe("medium");
     expect(response.body.description).toBeNull();
     expect(response.body.deadline).toBeNull();
     expect(response.body.assigneeId).toBeNull();
   });
 });
 
-describe('PUT /tasks/:id', () => {
-  it('should return 400 for invalid task ID', async () => {
+describe("PUT /api/tasks/:id", () => {
+  it("should return 400 for invalid task ID", async () => {
     const response = await request(app)
-      .put('/tasks/invalid')
-      .send({ title: 'Updated Title' });
+      .put("/api/tasks/invalid")
+      .send({ title: "Updated Title" });
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Invalid task ID');
+    expect(response.body.error).toBe("Invalid task ID");
   });
 
-  it('should return 404 when task does not exist', async () => {
+  it("should return 404 when task does not exist", async () => {
     const response = await request(app)
-      .put('/tasks/999')
-      .send({ title: 'Updated Title' });
+      .put("/api/tasks/999")
+      .send({ title: "Updated Title" });
     expect(response.status).toBe(404);
-    expect(response.body.error).toBe('Task not found');
+    expect(response.body.error).toBe("Task not found");
   });
 
-  it('should return 400 when updating title to empty string', async () => {
+  it("should return 400 when updating title to empty string", async () => {
     const task = await Task.create({
-      title: 'Original Title',
-      status: 'todo',
-      priority: 'medium',
+      title: "Original Title",
+      status: "todo",
+      priority: "medium",
     });
 
     const response = await request(app)
-      .put(`/tasks/${task.id}`)
-      .send({ title: '   ' });
+      .put(`/api/tasks/${task.id}`)
+      .send({ title: "   " });
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Title must be a non-empty string');
+    expect(response.body.error).toBe("Validation error");
+    expect(response.body.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: ["title"],
+        }),
+      ]),
+    );
   });
 
-  it('should return 400 when updating with invalid status', async () => {
+  it("should return 400 when updating with invalid status", async () => {
     const task = await Task.create({
-      title: 'Test Task',
-      status: 'todo',
-      priority: 'medium',
+      title: "Test Task",
+      status: "todo",
+      priority: "medium",
     });
 
     const response = await request(app)
-      .put(`/tasks/${task.id}`)
-      .send({ status: 'invalid' });
+      .put(`/api/tasks/${task.id}`)
+      .send({ status: "invalid" });
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Invalid status value');
+    expect(response.body.error).toBe("Validation error");
+    expect(response.body.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: ["status"],
+        }),
+      ]),
+    );
   });
 
-  it('should return 400 when updating with invalid priority', async () => {
+  it("should return 400 when updating with invalid priority", async () => {
     const task = await Task.create({
-      title: 'Test Task',
-      status: 'todo',
-      priority: 'medium',
+      title: "Test Task",
+      status: "todo",
+      priority: "medium",
     });
 
     const response = await request(app)
-      .put(`/tasks/${task.id}`)
-      .send({ priority: 'invalid' });
+      .put(`/api/tasks/${task.id}`)
+      .send({ priority: "invalid" });
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Invalid priority value');
+    expect(response.body.error).toBe("Validation error");
+    expect(response.body.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: ["priority"],
+        }),
+      ]),
+    );
   });
 
-  it('should return 400 when updating deadline to past date', async () => {
+  it("should return 400 when updating deadline to past date", async () => {
     const task = await Task.create({
-      title: 'Test Task',
-      status: 'todo',
-      priority: 'medium',
+      title: "Test Task",
+      status: "todo",
+      priority: "medium",
     });
 
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
     const response = await request(app)
-      .put(`/tasks/${task.id}`)
+      .put(`/api/tasks/${task.id}`)
       .send({ deadline: yesterday.toISOString() });
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Deadline cannot be in the past');
+    expect(response.body.error).toBe("Validation error");
+    expect(response.body.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: ["deadline"],
+          message: "Deadline cannot be in the past",
+        }),
+      ]),
+    );
   });
 
-  it('should return 400 when updating with non-existent assignee', async () => {
+  it("should return 400 when updating with non-existent assignee", async () => {
     const task = await Task.create({
-      title: 'Test Task',
-      status: 'todo',
-      priority: 'medium',
+      title: "Test Task",
+      status: "todo",
+      priority: "medium",
     });
 
     const response = await request(app)
-      .put(`/tasks/${task.id}`)
+      .put(`/api/tasks/${task.id}`)
       .send({ assigneeId: 999 });
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Assignee not found');
+    expect(response.body.error).toBe("Validation error");
+    expect(response.body.details).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          path: ["assigneeId"],
+          message: "Assignee not found",
+        }),
+      ]),
+    );
   });
 
-  it('should update task successfully (200)', async () => {
+  it("should update task successfully (200)", async () => {
     const task = await Task.create({
-      title: 'Original Title',
-      description: 'Original Description',
-      status: 'todo',
-      priority: 'low',
+      title: "Original Title",
+      description: "Original Description",
+      status: "todo",
+      priority: "low",
     });
 
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const response = await request(app)
-      .put(`/tasks/${task.id}`)
-      .send({
-        title: 'Updated Title',
-        description: 'Updated Description',
-        status: 'in-progress',
-        priority: 'high',
-        deadline: tomorrow.toISOString(),
-      });
+    const response = await request(app).put(`/api/tasks/${task.id}`).send({
+      title: "Updated Title",
+      description: "Updated Description",
+      status: "in-progress",
+      priority: "high",
+      deadline: tomorrow.toISOString(),
+    });
 
     expect(response.status).toBe(200);
     expect(response.body.id).toBe(task.id);
-    expect(response.body.title).toBe('Updated Title');
-    expect(response.body.description).toBe('Updated Description');
-    expect(response.body.status).toBe('in-progress');
-    expect(response.body.priority).toBe('high');
+    expect(response.body.title).toBe("Updated Title");
+    expect(response.body.description).toBe("Updated Description");
+    expect(response.body.status).toBe("in-progress");
+    expect(response.body.priority).toBe("high");
     expect(response.body.deadline).toBeDefined();
   });
 
-  it('should update task with assignee successfully (200)', async () => {
+  it("should update task with assignee successfully (200)", async () => {
     const user = await User.create({
-      name: 'Test User',
-      email: 'test@example.com',
+      firstname: "Test",
+      lastname: "User",
+      email: "test@example.com",
+      password: "password123",
     });
 
     const task = await Task.create({
-      title: 'Unassigned Task',
-      status: 'todo',
-      priority: 'medium',
+      title: "Unassigned Task",
+      status: "todo",
+      priority: "medium",
     });
 
     const response = await request(app)
-      .put(`/tasks/${task.id}`)
+      .put(`/api/tasks/${task.id}`)
       .send({ assigneeId: user.id });
 
     expect(response.status).toBe(200);
     expect(response.body.assignee).toBeDefined();
     expect(response.body.assignee.id).toBe(user.id);
+    expect(response.body.assignee.firstname).toBe("Test");
+    expect(response.body.assignee.lastname).toBe("User");
   });
 
-  it('should remove assignee when assigneeId is set to null (200)', async () => {
+  it("should remove assignee when assigneeId is set to null (200)", async () => {
     const user = await User.create({
-      name: 'Test User',
-      email: 'test@example.com',
+      firstname: "Test",
+      lastname: "User",
+      email: "test@example.com",
+      password: "password123",
     });
 
     const task = await Task.create({
-      title: 'Assigned Task',
-      status: 'todo',
-      priority: 'medium',
+      title: "Assigned Task",
+      status: "todo",
+      priority: "medium",
       assigneeId: user.id,
     });
 
     const response = await request(app)
-      .put(`/tasks/${task.id}`)
+      .put(`/api/tasks/${task.id}`)
       .send({ assigneeId: null });
 
     expect(response.status).toBe(200);
     expect(response.body.assignee).toBeNull();
   });
 
-  it('should remove deadline when deadline is set to null (200)', async () => {
+  it("should remove deadline when deadline is set to null (200)", async () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     const task = await Task.create({
-      title: 'Task with Deadline',
-      status: 'todo',
-      priority: 'medium',
+      title: "Task with Deadline",
+      status: "todo",
+      priority: "medium",
       deadline: tomorrow,
     });
 
     const response = await request(app)
-      .put(`/tasks/${task.id}`)
+      .put(`/api/tasks/${task.id}`)
       .send({ deadline: null });
 
     expect(response.status).toBe(200);
     expect(response.body.deadline).toBeNull();
   });
 
-  it('should update only provided fields (200)', async () => {
+  it("should update only provided fields (200)", async () => {
     const task = await Task.create({
-      title: 'Original Title',
-      description: 'Original Description',
-      status: 'todo',
-      priority: 'low',
+      title: "Original Title",
+      description: "Original Description",
+      status: "todo",
+      priority: "low",
     });
 
     const response = await request(app)
-      .put(`/tasks/${task.id}`)
-      .send({ status: 'done' });
+      .put(`/api/tasks/${task.id}`)
+      .send({ status: "done" });
 
     expect(response.status).toBe(200);
-    expect(response.body.title).toBe('Original Title');
-    expect(response.body.description).toBe('Original Description');
-    expect(response.body.status).toBe('done');
-    expect(response.body.priority).toBe('low');
+    expect(response.body.title).toBe("Original Title");
+    expect(response.body.description).toBe("Original Description");
+    expect(response.body.status).toBe("done");
+    expect(response.body.priority).toBe("low");
   });
 });
 
-describe('DELETE /tasks/:id', () => {
-  it('should return 400 for invalid task ID', async () => {
-    const response = await request(app).delete('/tasks/invalid');
+describe("DELETE /api/tasks/:id", () => {
+  it("should return 400 for invalid task ID", async () => {
+    const response = await request(app).delete("/api/tasks/invalid");
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Invalid task ID');
+    expect(response.body.error).toBe("Invalid task ID");
   });
 
-  it('should return 404 when task does not exist', async () => {
-    const response = await request(app).delete('/tasks/999');
+  it("should return 404 when task does not exist", async () => {
+    const response = await request(app).delete("/api/tasks/999");
     expect(response.status).toBe(404);
-    expect(response.body.error).toBe('Task not found');
+    expect(response.body.error).toBe("Task not found");
   });
 
-  it('should delete task successfully (204)', async () => {
+  it("should delete task successfully (204)", async () => {
     const task = await Task.create({
-      title: 'Task to Delete',
-      status: 'todo',
-      priority: 'medium',
+      title: "Task to Delete",
+      status: "todo",
+      priority: "medium",
     });
 
-    const response = await request(app).delete(`/tasks/${task.id}`);
+    const response = await request(app).delete(`/api/tasks/${task.id}`);
     expect(response.status).toBe(204);
     expect(response.body).toEqual({});
 
@@ -487,20 +586,22 @@ describe('DELETE /tasks/:id', () => {
     expect(deletedTask).toBeNull();
   });
 
-  it('should delete task with assignee successfully (204)', async () => {
+  it("should delete task with assignee successfully (204)", async () => {
     const user = await User.create({
-      name: 'Test User',
-      email: 'test@example.com',
+      firstname: "Test",
+      lastname: "User",
+      email: "test@example.com",
+      password: "password123",
     });
 
     const task = await Task.create({
-      title: 'Assigned Task to Delete',
-      status: 'todo',
-      priority: 'medium',
+      title: "Assigned Task to Delete",
+      status: "todo",
+      priority: "medium",
       assigneeId: user.id,
     });
 
-    const response = await request(app).delete(`/tasks/${task.id}`);
+    const response = await request(app).delete(`/api/tasks/${task.id}`);
     expect(response.status).toBe(204);
 
     const deletedTask = await Task.findByPk(task.id);

@@ -11,7 +11,6 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         projectService: true,
-        project: ['./tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
         sourceType: 'module'
       }
@@ -24,7 +23,15 @@ export default tseslint.config(
       'n/no-missing-import': 'off',
       'n/no-unsupported-features/es-syntax': 'off',
       'n/no-unsupported-features/es-builtins': 'off',
-      'prettier/prettier': 'warn'
+      'prettier/prettier': 'warn',
+      '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
     }
   },
   {
