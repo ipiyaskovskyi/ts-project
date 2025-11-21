@@ -1,4 +1,4 @@
-import express, { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import {
   getAllTasks,
@@ -58,7 +58,7 @@ const validateBody = (schema: z.ZodSchema) => {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         });
       }
       next(error);
@@ -75,7 +75,7 @@ const validateQuery = (schema: z.ZodSchema) => {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         });
       }
       next(error);
@@ -83,15 +83,10 @@ const validateQuery = (schema: z.ZodSchema) => {
   };
 };
 
-router.get('/', (req: Request, res: Response) => {
-  res.send('Hello, TypeScript + Express!');
-});
-
-
-router.get('/tasks', validateQuery(queryFiltersSchema), getAllTasks);
-router.get('/tasks/:id', getTaskById);
-router.post('/tasks', validateBody(createTaskSchema), createTask);
-router.put('/tasks/:id', validateBody(updateTaskSchema), updateTask);
-router.delete('/tasks/:id', deleteTask);
+router.get('/', validateQuery(queryFiltersSchema), getAllTasks);
+router.get('/:id', getTaskById);
+router.post('/', validateBody(createTaskSchema), createTask);
+router.put('/:id', validateBody(updateTaskSchema), updateTask);
+router.delete('/:id', deleteTask);
 
 export default router;

@@ -3,8 +3,8 @@ import express, { type Request, type Response } from 'express';
 import cors from 'cors';
 import { sequelize } from './models/index';
 import './config/database';
-import taskRoutes from './routes/task.routes';
-import { AppError } from './lib/errors';
+import taskRoutes from './routes/task.routes.js';
+import { AppError } from './lib/errors.js';
 
 const app = express();
 const PORT = 3001;
