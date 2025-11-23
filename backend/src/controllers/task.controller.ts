@@ -1,11 +1,11 @@
-import { Request, Response, NextFunction } from 'express';
-import { taskService } from '../services/task.service.js';
-import { User } from '../models/index.js';
+import { Request, Response, NextFunction } from "express";
+import { taskService } from "../services/task.service.js";
+import { User } from "../models/index.js";
 import type {
   TaskFilters,
   CreateTaskInput,
   UpdateTaskInput,
-} from '../types/task.types.ts';
+} from "../types/task.types.ts";
 
 export const getAllTasks = async (
   req: Request<
@@ -36,7 +36,7 @@ export const getTaskById = async (
     const numericId = Number(id);
 
     if (isNaN(numericId)) {
-      return res.status(400).json({ error: 'Invalid task ID' });
+      return res.status(400).json({ error: "Invalid task ID" });
     }
 
     const task = await taskService.getById(numericId);
@@ -56,8 +56,8 @@ export const createTask = async (
       const user = await User.findByPk(req.body.assigneeId);
       if (!user) {
         return res.status(400).json({
-          error: 'Validation error',
-          details: [{ path: ['assigneeId'], message: 'Assignee not found' }],
+          error: "Validation error",
+          details: [{ path: ["assigneeId"], message: "Assignee not found" }],
         });
       }
     }
@@ -78,15 +78,15 @@ export const updateTask = async (
     const numericId = Number(id);
 
     if (isNaN(numericId)) {
-      return res.status(400).json({ error: 'Invalid task ID' });
+      return res.status(400).json({ error: "Invalid task ID" });
     }
 
     if (req.body.assigneeId !== undefined && req.body.assigneeId !== null) {
       const user = await User.findByPk(req.body.assigneeId);
       if (!user) {
         return res.status(400).json({
-          error: 'Validation error',
-          details: [{ path: ['assigneeId'], message: 'Assignee not found' }],
+          error: "Validation error",
+          details: [{ path: ["assigneeId"], message: "Assignee not found" }],
         });
       }
     }
@@ -108,7 +108,7 @@ export const deleteTask = async (
     const numericId = Number(id);
 
     if (isNaN(numericId)) {
-      return res.status(400).json({ error: 'Invalid task ID' });
+      return res.status(400).json({ error: "Invalid task ID" });
     }
 
     await taskService.delete(numericId);

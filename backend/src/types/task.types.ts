@@ -1,4 +1,4 @@
-import type { Status, Priority } from '../dto/Task.js';
+import type { Status, Priority } from "../dto/Task.js";
 
 export type DateString = string | Date;
 
