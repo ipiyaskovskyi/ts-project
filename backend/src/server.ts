@@ -21,12 +21,18 @@ function registerProcessHandlers() {
     process.exit(0);
   };
 
+  // Prevent process from exiting on uncaught exception
   process.on('uncaughtException', (error) => {
     console.error('[fatal] uncaught exception:', error);
+    // Log the error but don't exit - keep server running
+    // In production, you might want to restart gracefully
   });
 
-  process.on('unhandledRejection', (reason) => {
-    console.error('[fatal] unhandled rejection:', reason);
+  // Handle unhandled promise rejections
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('[fatal] unhandled rejection at:', promise);
+    console.error('[fatal] reason:', reason);
+    // Don't exit, just log - let Express error handler deal with it
   });
 
   process.once('SIGINT', () => logAndExit('SIGINT'));
@@ -111,26 +117,87 @@ async function addTypeColumnIfNotExists() {
 
 async function initializeDatabase() {
   try {
+    console.log('Attempting to connect to database...');
     await sequelize.authenticate();
+    console.log('Database connection established');
     await sequelize.sync({ force: false, alter: false });
+    console.log('Database models synced');
     await addTypeColumnIfNotExists();
     await ensurePostgresEnums();
     console.log('Database connected and synced');
   } catch (error) {
     console.error('Unable to connect to the database:', error);
-    process.exit(1);
+    console.error('Database error details:', error instanceof Error ? error.stack : error);
+    throw error; // Re-throw to be handled by startServer
   }
 }
+
+// Log all incoming requests for debugging
+app.use((req, _res, next) => {
+  console.log(`[server] ${req.method} ${req.path}`);
+  next();
+});
 
 app.use('/', tasksRouter);
 app.use('/api', tasksRouter);
 app.use('/api/auth', authRouter);
 
-async function startServer() {
-  await initializeDatabase();
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// 404 handler
+app.use((_req: express.Request, res: express.Response) => {
+  res.status(404).json({ error: 'Route not found' });
+});
+
+// Error handling middleware (must be last)
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Unhandled error:', err);
+  
+  // If response was already sent, delegate to default error handler
+  if (res.headersSent) {
+    return _next(err);
+  }
+  
+  res.status(err.status || 500).json({
+    error: process.env.NODE_ENV === 'production' 
+      ? 'Internal server error' 
+      : err.message || 'Internal server error'
   });
+});
+
+async function startServer() {
+  try {
+    await initializeDatabase();
+    
+    const server = app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+
+    // Handle server errors
+    server.on('error', (error: NodeJS.ErrnoException) => {
+      if (error.syscall !== 'listen') {
+        throw error;
+      }
+
+      const bind = typeof PORT === 'string' ? `Pipe ${PORT}` : `Port ${PORT}`;
+
+      switch (error.code) {
+        case 'EACCES':
+          console.error(`${bind} requires elevated privileges`);
+          process.exit(1);
+          break;
+        case 'EADDRINUSE':
+          console.error(`${bind} is already in use`);
+          process.exit(1);
+          break;
+        default:
+          throw error;
+      }
+    });
+
+    return server;
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
 }
 
 const isMainModule =
@@ -139,7 +206,10 @@ const isMainModule =
 
 if (isMainModule) {
   registerProcessHandlers();
-  startServer();
+  startServer().catch((error) => {
+    console.error('Fatal error starting server:', error);
+    process.exit(1);
+  });
 }
 
 export { app };

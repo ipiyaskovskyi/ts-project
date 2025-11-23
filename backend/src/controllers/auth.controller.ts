@@ -30,7 +30,11 @@ export class AuthController {
         return;
       }
       console.error('Error registering user:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      const errorMessage =
+        error instanceof Error ? error.message : 'Internal server error';
+      res.status(500).json({
+        error: process.env.NODE_ENV === 'production' ? 'Internal server error' : errorMessage,
+      });
       return;
     }
   }
@@ -60,7 +64,11 @@ export class AuthController {
         return;
       }
       console.error('Error logging in:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      const errorMessage =
+        error instanceof Error ? error.message : 'Internal server error';
+      res.status(500).json({
+        error: process.env.NODE_ENV === 'production' ? 'Internal server error' : errorMessage,
+      });
       return;
     }
   }
