@@ -1,10 +1,10 @@
 import "reflect-metadata";
 import express, { type Request, type Response } from "express";
 import cors from "cors";
-import { sequelize } from "./models/index";
-import "./config/database";
-import taskRoutes from "./routes/task.routes";
-import { AppError } from "./lib/errors";
+import { sequelize } from "./models/index.js";
+import "./config/database.js";
+import taskRoutes from "./routes/task.routes.js";
+import { AppError } from "./lib/errors.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
