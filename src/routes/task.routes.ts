@@ -107,7 +107,6 @@ const validateBody = (schema: z.ZodSchema) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       const validated = schema.parse(req.body);
-      // Замінюємо req.body на валідовані дані
       req.body = validated;
       next();
     } catch (error) {
