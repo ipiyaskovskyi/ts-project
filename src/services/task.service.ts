@@ -93,31 +93,36 @@ class TaskService {
       throw new AppError('Task not found', 404);
     }
 
-    if (input.title !== undefined) {
-      task.title = input.title;
+    if ('title' in input && input.title !== undefined && input.title !== null) {
+      const trimmedTitle = String(input.title).trim();
+      if (trimmedTitle.length > 0) {
+        task.title = trimmedTitle;
+      }
     }
 
-    if (input.description !== undefined) {
+    if ('description' in input) {
       task.description = input.description || null;
     }
 
-    if (input.status !== undefined) {
+    if ('status' in input && input.status !== undefined) {
       task.status = input.status;
     }
 
-    if (input.priority !== undefined) {
+    if ('priority' in input && input.priority !== undefined) {
       task.priority = input.priority;
     }
 
-    if (input.deadline !== undefined) {
-      task.deadline =
-        input.deadline === null || input.deadline === ''
-          ? null
-          : new Date(input.deadline);
+    if ('deadline' in input) {
+      if (input.deadline === null || input.deadline === '' || input.deadline === undefined) {
+        task.deadline = null;
+      } else if (typeof input.deadline === 'string') {
+        const date = new Date(input.deadline);
+        task.deadline = isNaN(date.getTime()) ? null : date;
+      }
     }
 
-    if (input.assigneeId !== undefined) {
-      task.assigneeId = input.assigneeId === null ? null : input.assigneeId;
+    if ('assigneeId' in input) {
+      task.assigneeId = input.assigneeId === null || input.assigneeId === undefined ? null : input.assigneeId;
     }
 
     await task.save();

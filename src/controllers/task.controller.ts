@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { taskService } from '../services/task.service.js';
+import { User } from '../models/index.js';
 import type {
   TaskFilters,
   CreateTaskInput,
@@ -51,6 +52,15 @@ export const createTask = async (
   next: NextFunction,
 ) => {
   try {
+    if (req.body.assigneeId !== undefined && req.body.assigneeId !== null) {
+      const user = await User.findByPk(req.body.assigneeId);
+      if (!user) {
+        return res.status(400).json({
+          error: 'Validation error',
+          details: [{ path: ['assigneeId'], message: 'Assignee not found' }],
+        });
+      }
+    }
     const task = await taskService.create(req.body);
     res.status(201).json(task);
   } catch (error) {
@@ -69,6 +79,16 @@ export const updateTask = async (
 
     if (isNaN(numericId)) {
       return res.status(400).json({ error: 'Invalid task ID' });
+    }
+
+    if (req.body.assigneeId !== undefined && req.body.assigneeId !== null) {
+      const user = await User.findByPk(req.body.assigneeId);
+      if (!user) {
+        return res.status(400).json({
+          error: 'Validation error',
+          details: [{ path: ['assigneeId'], message: 'Assignee not found' }],
+        });
+      }
     }
 
     const task = await taskService.update(numericId, req.body);

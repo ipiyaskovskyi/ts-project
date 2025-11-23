@@ -20,7 +20,13 @@
     "api": "tsx src/server.ts",
     "test": "NODE_ENV=test jest",
     "lint": "eslint src tests --ext .ts",
-    "lint:fix": "eslint src tests --ext .ts --fix"
+    "lint:fix": "eslint src tests --ext .ts --fix",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix"
+    ]
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -32,7 +38,9 @@
     "@typescript-eslint/eslint-plugin": "^8.47.0",
     "@typescript-eslint/parser": "^8.47.0",
     "eslint": "^9.39.1",
+    "husky": "^9.1.7",
     "jest": "^30.2.0",
+    "lint-staged": "^16.2.7",
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.5",
     "tsx": "^4.20.6",

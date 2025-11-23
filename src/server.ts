@@ -26,7 +26,9 @@ async function initializeDatabase() {
 app.use('/tasks', taskRoutes);
 
 app.use((err: Error | AppError, _req: Request, res: Response, _next: express.NextFunction) => {
-  console.error('Error:', err);
+  if (process.env.NODE_ENV !== 'test') {
+    console.error('Error:', err);
+  }
   if (err instanceof AppError) {
     res.status(err.statusCode).json({ error: err.message });
   } else {

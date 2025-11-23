@@ -14,17 +14,71 @@ const taskStatusEnum = z.enum(['todo', 'in-progress', 'done']);
 const taskPriorityEnum = z.enum(['low', 'medium', 'high']);
 
 const createTaskSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().optional(),
+  title: z.string().min(1, 'Title is required').trim().refine((val) => val.length > 0, {
+    message: 'Title cannot be empty',
+  }),
+  description: z.string().optional().nullable(),
   status: taskStatusEnum.optional(),
   priority: taskPriorityEnum.optional(),
+  deadline: z.union([
+    z.string().refine((val) => {
+      if (!val || val.trim() === '') return true;
+      const date = new Date(val);
+      if (isNaN(date.getTime())) return false;
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      return date >= now;
+    }, {
+      message: 'Deadline must be a valid future date',
+    }),
+    z.null(),
+    z.undefined(),
+  ]).optional(),
+  assigneeId: z.union([
+    z.number().int().positive(),
+    z.string().refine((val) => {
+      const num = Number(val);
+      return !isNaN(num) && num > 0 && Number.isInteger(num);
+    }, {
+      message: 'AssigneeId must be a positive integer',
+    }).transform((val) => Number(val)),
+    z.null(),
+    z.undefined(),
+  ]).optional(),
 });
 
 const updateTaskSchema = z.object({
-  title: z.string().min(1).optional(),
-  description: z.string().optional(),
+  title: z.string().min(1).trim().refine((val) => val.length > 0, {
+    message: 'Title cannot be empty',
+  }).optional(),
+  description: z.string().optional().nullable(),
   status: taskStatusEnum.optional(),
   priority: taskPriorityEnum.optional(),
+  deadline: z.union([
+    z.string().refine((val) => {
+      if (!val || val.trim() === '') return true;
+      const date = new Date(val);
+      if (isNaN(date.getTime())) return false;
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      return date >= now;
+    }, {
+      message: 'Deadline must be a valid future date',
+    }),
+    z.null(),
+    z.undefined(),
+  ]).optional(),
+  assigneeId: z.union([
+    z.number().int().positive(),
+    z.string().refine((val) => {
+      const num = Number(val);
+      return !isNaN(num) && num > 0 && Number.isInteger(num);
+    }, {
+      message: 'AssigneeId must be a positive integer',
+    }).transform((val) => Number(val)),
+    z.null(),
+    z.undefined(),
+  ]).optional(),
 }).strict().refine(
   (data) => !('id' in data) && !('createdAt' in data),
   {
@@ -52,13 +106,19 @@ const queryFiltersSchema = z.object({
 const validateBody = (schema: z.ZodSchema) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
-      schema.parse(req.body);
+      const validated = schema.parse(req.body);
+      // Замінюємо req.body на валідовані дані
+      req.body = validated;
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           error: 'Validation error',
-          details: error.issues,
+          details: error.issues.map(issue => ({
+            path: issue.path.join('.'),
+            message: issue.message,
+            code: issue.code,
+          })),
         });
       }
       next(error);
