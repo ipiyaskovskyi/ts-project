@@ -18,13 +18,31 @@ export const validateBody = (schema: z.ZodSchema) => {
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
+        const firstError = error.errors[0];
+        let errorMessage = firstError?.message || 'Validation failed';
+        
+        if (errorMessage === 'Required') {
+          errorMessage = 'Title is required and must be a non-empty string';
+        } else if (errorMessage.includes('Invalid enum value')) {
+          if (firstError?.path?.includes('status')) {
+            errorMessage = 'Invalid status value';
+          } else if (firstError?.path?.includes('priority')) {
+            errorMessage = 'Invalid priority value';
+          }
+        } else if (errorMessage.includes('Deadline cannot be in the past')) {
+          errorMessage = 'Deadline cannot be in the past';
+        } else if (firstError?.path?.includes('title')) {
+          const isUpdate = req.method === 'PUT' || req.method === 'PATCH';
+          const titleInBody = 'title' in req.body;
+          if (isUpdate && titleInBody) {
+            errorMessage = 'Title must be a non-empty string';
+          } else {
+            errorMessage = 'Title is required and must be a non-empty string';
+          }
+        }
+        
         res.status(400).json({
-          error: 'Validation error',
-          details: error.issues.map((issue) => ({
-            path: issue.path.join('.'),
-            message: issue.message,
-            code: issue.code,
-          })),
+          error: errorMessage,
         });
         return;
       }
