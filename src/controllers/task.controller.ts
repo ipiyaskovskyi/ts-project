@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { taskService } from '../services/task.service.js';
-import { User } from '../models/index.js';
 import type {
   TaskFilters,
   CreateTaskInput,
@@ -32,13 +31,7 @@ export const getTaskById = async (
   next: NextFunction,
 ) => {
   try {
-    const { id } = req.params;
-    const numericId = Number(id);
-
-    if (isNaN(numericId)) {
-      return res.status(400).json({ error: 'Invalid task ID' });
-    }
-
+    const numericId = res.locals.validatedId as number;
     const task = await taskService.getById(numericId);
     res.json(task);
   } catch (error) {
@@ -52,15 +45,6 @@ export const createTask = async (
   next: NextFunction,
 ) => {
   try {
-    if (req.body.assigneeId !== undefined && req.body.assigneeId !== null) {
-      const user = await User.findByPk(req.body.assigneeId);
-      if (!user) {
-        return res.status(400).json({
-          error: 'Validation error',
-          details: [{ path: ['assigneeId'], message: 'Assignee not found' }],
-        });
-      }
-    }
     const task = await taskService.create(req.body);
     res.status(201).json(task);
   } catch (error) {
@@ -74,23 +58,7 @@ export const updateTask = async (
   next: NextFunction,
 ) => {
   try {
-    const { id } = req.params;
-    const numericId = Number(id);
-
-    if (isNaN(numericId)) {
-      return res.status(400).json({ error: 'Invalid task ID' });
-    }
-
-    if (req.body.assigneeId !== undefined && req.body.assigneeId !== null) {
-      const user = await User.findByPk(req.body.assigneeId);
-      if (!user) {
-        return res.status(400).json({
-          error: 'Validation error',
-          details: [{ path: ['assigneeId'], message: 'Assignee not found' }],
-        });
-      }
-    }
-
+    const numericId = res.locals.validatedId as number;
     const task = await taskService.update(numericId, req.body);
     res.json(task);
   } catch (error) {
@@ -104,13 +72,7 @@ export const deleteTask = async (
   next: NextFunction,
 ) => {
   try {
-    const { id } = req.params;
-    const numericId = Number(id);
-
-    if (isNaN(numericId)) {
-      return res.status(400).json({ error: 'Invalid task ID' });
-    }
-
+    const numericId = res.locals.validatedId as number;
     await taskService.delete(numericId);
     res.status(204).send();
   } catch (error) {
