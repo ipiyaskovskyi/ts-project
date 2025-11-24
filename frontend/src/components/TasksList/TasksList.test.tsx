@@ -13,7 +13,8 @@ function createTask(partial: Partial<Task> = {}): Task {
     deadline: "2025-01-01T10:00:00.000Z",
     assignee: {
       id: 10,
-      name: "Jane Doe",
+      firstname: "Jane",
+      lastname: "Doe",
       email: "jane@example.com",
     },
     createdAt: "2024-12-31T12:00:00.000Z",
@@ -38,7 +39,7 @@ describe("TasksList", () => {
 
     render(<TasksList tasks={tasks} />);
 
-    expect(screen.getAllByTestId("task-item")).toHaveLength(2);
+    expect(screen.getAllByRole("listitem")).toHaveLength(2);
     expect(screen.getByText("Task title")).toBeInTheDocument();
     expect(screen.getByText("Task description")).toBeInTheDocument();
     expect(screen.getAllByText("Status").length).toBeGreaterThan(0);
@@ -52,7 +53,8 @@ describe("TasksList", () => {
 
   it("renders empty state", () => {
     render(<TasksList tasks={[]} />);
-    expect(screen.getByTestId("tasks-empty")).toHaveTextContent("No tasks yet");
+    const emptyMessage = screen.getByText("No tasks yet");
+    expect(emptyMessage).toBeInTheDocument();
   });
 
   it("renders error message and handles retry", async () => {

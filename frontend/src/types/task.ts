@@ -4,7 +4,8 @@ export type ISODateString = string;
 
 export interface TaskAssignee {
   id: number;
-  name: string;
+  firstname: string;
+  lastname: string;
   email: string;
 }
 

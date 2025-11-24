@@ -27,14 +27,14 @@ describe("TaskForm", () => {
 
     const titleInput = screen.getByLabelText(/title/i);
     await user.type(titleInput, "ab");
-    const minError = await screen.findByTestId("error-title");
-    expect(minError).toHaveTextContent(
+    const minError = await screen.findByText(
       "Title must be at least 3 characters long",
     );
+    expect(minError).toBeInTheDocument();
 
     await user.clear(titleInput);
-    const requiredError = await screen.findByTestId("error-title");
-    expect(requiredError).toHaveTextContent("Title is required");
+    const requiredError = await screen.findByText("Title is required");
+    expect(requiredError).toBeInTheDocument();
 
     const deadlineInput = screen.getByLabelText(/deadline/i);
     const yesterday = new Date();
@@ -44,7 +44,7 @@ describe("TaskForm", () => {
     await user.clear(deadlineInput);
     await user.type(deadlineInput, formatted);
 
-    const deadlineError = await screen.findByTestId("error-deadline");
-    expect(deadlineError).toHaveTextContent("Deadline cannot be in the past");
+    const deadlineError = await screen.findByText("Deadline cannot be in the past");
+    expect(deadlineError).toBeInTheDocument();
   });
 });

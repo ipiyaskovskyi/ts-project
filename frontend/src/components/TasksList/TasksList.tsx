@@ -24,7 +24,7 @@ function formatAssignee(task: Task): string {
   if (!task.assignee) {
     return "Unassigned";
   }
-  return `${task.assignee.name} (${task.assignee.email})`;
+  return `${task.assignee.firstname} ${task.assignee.lastname} (${task.assignee.email})`;
 }
 
 export interface TasksListProps {

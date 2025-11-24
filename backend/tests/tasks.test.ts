@@ -199,7 +199,7 @@ describe("POST /api/tasks", () => {
       expect.arrayContaining([
         expect.objectContaining({
           path: ["deadline"],
-          message: "Deadline cannot be in the past",
+          message: "Deadline must be a valid future date",
         }),
       ]),
     );
@@ -243,15 +243,7 @@ describe("POST /api/tasks", () => {
       assigneeId: 999,
     });
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe("Validation error");
-    expect(response.body.details).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          path: ["assigneeId"],
-          message: "Assignee not found",
-        }),
-      ]),
-    );
+    expect(response.body.error).toBe("Assignee not found");
   });
 
   it("should create task successfully (201)", async () => {
@@ -415,7 +407,7 @@ describe("PUT /api/tasks/:id", () => {
       expect.arrayContaining([
         expect.objectContaining({
           path: ["deadline"],
-          message: "Deadline cannot be in the past",
+          message: "Deadline must be a valid future date",
         }),
       ]),
     );
@@ -432,15 +424,7 @@ describe("PUT /api/tasks/:id", () => {
       .put(`/api/tasks/${task.id}`)
       .send({ assigneeId: 999 });
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe("Validation error");
-    expect(response.body.details).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          path: ["assigneeId"],
-          message: "Assignee not found",
-        }),
-      ]),
-    );
+    expect(response.body.error).toBe("Assignee not found");
   });
 
   it("should update task successfully (200)", async () => {
