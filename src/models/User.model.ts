@@ -10,7 +10,7 @@ import {
   HasMany,
 } from 'sequelize-typescript';
 import type { Optional } from 'sequelize';
-import { Task } from './Task.model';
+import { Task } from './Task.model.js';
 
 export interface UserAttributes {
   id: number;

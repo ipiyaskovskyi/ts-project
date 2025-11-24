@@ -1,6 +1,6 @@
 import { sequelize } from '../config/database';
-import { User } from './User.model';
-import { Task } from './Task.model';
+import { User } from './User.model.js';
+import { Task } from './Task.model.js';
 
 sequelize.addModels([User, Task]);
 
