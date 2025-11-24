@@ -14,7 +14,6 @@ import {
   updateTask,
   deleteTask,
   type CreateTaskPayload,
-  type TaskFilters,
 } from './api/tasks';
 
 interface FilterState {

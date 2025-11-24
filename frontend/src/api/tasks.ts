@@ -42,7 +42,9 @@ async function handleResponse<T>(response: Response): Promise<T> {
       if (errorBody?.error) {
         message = errorBody.error;
       }
-    } catch (error) {}
+    } catch {
+      // Ignore JSON parsing errors, use default message
+    }
     throw new Error(message);
   }
 
@@ -183,7 +185,9 @@ export async function deleteTask(id: number): Promise<void> {
       if (errorBody?.error) {
         message = errorBody.error;
       }
-    } catch (error) {}
+    } catch {
+      // Ignore JSON parsing errors, use default message
+    }
     throw new Error(message);
   }
 }

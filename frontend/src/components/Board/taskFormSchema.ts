@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { Status, Priority, TaskType } from '../../types';
 
 export const taskFormSchema = z.object({
   title: z

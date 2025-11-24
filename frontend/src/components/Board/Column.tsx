@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { Box, Typography, Chip, Paper } from '@mui/material';
+import { Box, Typography, Chip } from '@mui/material';
 import type { Task, Status } from '../../types';
 import { Card } from './Card';
 
