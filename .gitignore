@@ -13,7 +13,7 @@ coverage
 node_modules
 dist
 dist-ssr
-backend/data/*.sqlite
+backend/*.sqlite
 backend/dist
 frontend/dist
 *.local
