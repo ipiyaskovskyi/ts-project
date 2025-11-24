@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { taskParamsSchema } from '../validators/tasks.validator.js';
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       validatedTaskId?: number;
@@ -20,7 +21,7 @@ export const validateBody = (schema: z.ZodSchema) => {
       if (error instanceof z.ZodError) {
         const firstError = error.errors[0];
         let errorMessage = firstError?.message || 'Validation failed';
-        
+
         if (errorMessage === 'Required') {
           errorMessage = 'Title is required and must be a non-empty string';
         } else if (errorMessage.includes('Invalid enum value')) {
@@ -40,7 +41,7 @@ export const validateBody = (schema: z.ZodSchema) => {
             errorMessage = 'Title is required and must be a non-empty string';
           }
         }
-        
+
         res.status(400).json({
           error: errorMessage,
         });
@@ -87,4 +88,3 @@ export const validateTaskId = (
   req.params.id = String(paramsValidation.data.id);
   next();
 };
-

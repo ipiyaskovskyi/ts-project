@@ -14,25 +14,17 @@ import {
 const tasksRouter = Router();
 const tasksController = new TasksController();
 
-tasksRouter.get(
-  '/tasks',
-  validateQuery(taskQuerySchema),
-  (req, res) => {
-    tasksController.getAllTasks(req, res);
-  }
-);
+tasksRouter.get('/tasks', validateQuery(taskQuerySchema), (req, res) => {
+  tasksController.getAllTasks(req, res);
+});
 
 tasksRouter.get('/tasks/:id', validateTaskId, (req, res) => {
   tasksController.getTaskById(req, res);
 });
 
-tasksRouter.post(
-  '/tasks',
-  validateBody(createTaskSchema),
-  (req, res) => {
-    tasksController.createTask(req, res);
-  }
-);
+tasksRouter.post('/tasks', validateBody(createTaskSchema), (req, res) => {
+  tasksController.createTask(req, res);
+});
 
 tasksRouter.put(
   '/tasks/:id',

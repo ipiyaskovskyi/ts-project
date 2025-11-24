@@ -122,7 +122,10 @@ async function initializeDatabase() {
     console.log('Database connected and synced');
   } catch (error) {
     console.error('Unable to connect to the database:', error);
-    console.error('Database error details:', error instanceof Error ? error.stack : error);
+    console.error(
+      'Database error details:',
+      error instanceof Error ? error.stack : error
+    );
     throw error; // Re-throw to be handled by startServer
   }
 }
@@ -140,27 +143,36 @@ app.use((_req: express.Request, res: express.Response) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('Unhandled error:', err);
-  
-  if (res.headersSent) {
-    return _next(err);
+app.use(
+  (
+    err: unknown,
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction
+  ) => {
+    console.error('Unhandled error:', err);
+
+    if (res.headersSent) {
+      return _next(err);
+    }
+
+    const status = (err as { status?: number })?.status || 500;
+    const message =
+      err instanceof Error ? err.message : 'Internal server error';
+
+    res.status(status).json({
+      error:
+        process.env.NODE_ENV === 'production'
+          ? 'Internal server error'
+          : message,
+    });
   }
-  
-  const status = (err as { status?: number })?.status || 500;
-  const message = err instanceof Error ? err.message : 'Internal server error';
-  
-  res.status(status).json({
-    error: process.env.NODE_ENV === 'production' 
-      ? 'Internal server error' 
-      : message
-  });
-});
+);
 
 async function startServer() {
   try {
     await initializeDatabase();
-    
+
     const server = app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });

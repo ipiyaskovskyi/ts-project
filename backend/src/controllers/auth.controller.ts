@@ -33,7 +33,10 @@ export class AuthController {
       const errorMessage =
         error instanceof Error ? error.message : 'Internal server error';
       res.status(500).json({
-        error: process.env.NODE_ENV === 'production' ? 'Internal server error' : errorMessage,
+        error:
+          process.env.NODE_ENV === 'production'
+            ? 'Internal server error'
+            : errorMessage,
       });
       return;
     }
@@ -67,7 +70,10 @@ export class AuthController {
       const errorMessage =
         error instanceof Error ? error.message : 'Internal server error';
       res.status(500).json({
-        error: process.env.NODE_ENV === 'production' ? 'Internal server error' : errorMessage,
+        error:
+          process.env.NODE_ENV === 'production'
+            ? 'Internal server error'
+            : errorMessage,
       });
       return;
     }
