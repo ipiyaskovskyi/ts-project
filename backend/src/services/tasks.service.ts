@@ -2,6 +2,7 @@ import { Task, User } from '../models/index.js';
 import type { Status, Priority } from '../dto/Task.js';
 import type { WhereOptions } from 'sequelize';
 import { Op } from 'sequelize';
+import { AppError } from '../utils/AppError.js';
 
 export interface CreateTaskData {
   title: string;
@@ -43,7 +44,10 @@ export class TasksService {
     }
 
     if (filters?.createdFrom || filters?.createdTo) {
-      const createdAtFilter: any = {};
+      const createdAtFilter: {
+        [Op.gte]?: Date;
+        [Op.lte]?: Date;
+      } = {};
       if (filters.createdFrom) {
         const fromDate = new Date(filters.createdFrom);
         fromDate.setHours(0, 0, 0, 0);
@@ -85,17 +89,27 @@ export class TasksService {
   }
 
   async createTask(data: CreateTaskData) {
-    const task = await Task.create({
-      title: data.title,
-      description: data.description || null,
-      type: data.type || null,
-      status: data.status || 'todo',
-      priority: data.priority || 'medium',
-      deadline: data.deadline !== undefined ? data.deadline : null,
-      assigneeId: data.assigneeId || null,
-    });
+    try {
+      const task = await Task.create({
+        title: data.title,
+        description: data.description ?? null,
+        type: data.type ?? null,
+        status: data.status ?? 'todo',
+        priority: data.priority ?? 'medium',
+        deadline: data.deadline ?? null,
+        assigneeId: data.assigneeId ?? null,
+      });
 
-    return await this.getTaskById(task.id);
+      return await this.getTaskById(task.id);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.name === 'SequelizeForeignKeyConstraintError'
+      ) {
+        throw new AppError('Assignee not found', 400);
+      }
+      throw error;
+    }
   }
 
   async updateTask(id: number, data: UpdateTaskData) {
@@ -120,14 +134,24 @@ export class TasksService {
       task.priority = data.priority;
     }
     if (data.deadline !== undefined) {
-      task.deadline = data.deadline === null ? null : data.deadline;
+      task.deadline = data.deadline;
     }
     if (data.assigneeId !== undefined) {
       task.assigneeId = data.assigneeId;
     }
 
-    await task.save();
-    return await this.getTaskById(task.id);
+    try {
+      await task.save();
+      return await this.getTaskById(task.id);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.name === 'SequelizeForeignKeyConstraintError'
+      ) {
+        throw new AppError('Assignee not found', 400);
+      }
+      throw error;
+    }
   }
 
   async deleteTask(id: number) {

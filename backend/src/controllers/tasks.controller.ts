@@ -1,29 +1,13 @@
 import type { Request, Response } from 'express';
 import { TasksService } from '../services/tasks.service.js';
-import {
-  createTaskSchema,
-  updateTaskSchema,
-  taskParamsSchema,
-  taskQuerySchema,
-} from '../validators/tasks.validator.js';
-import { User } from '../models/index.js';
+import { AppError } from '../utils/AppError.js';
 
 const tasksService = new TasksService();
 
 export class TasksController {
   async getAllTasks(req: Request, res: Response): Promise<void> {
     try {
-      const queryValidation = taskQuerySchema.safeParse(req.query);
-      if (!queryValidation.success) {
-        res.status(400).json({
-          error: 'Invalid query parameters',
-          details: queryValidation.error.errors,
-        });
-        return;
-      }
-
-      const filters = queryValidation.data;
-      const tasks = await tasksService.getAllTasks(filters);
+      const tasks = await tasksService.getAllTasks(req.validatedQuery!);
       res.json(tasks);
       return;
     } catch (error) {
@@ -35,15 +19,7 @@ export class TasksController {
 
   async getTaskById(req: Request, res: Response): Promise<void> {
     try {
-      const paramsValidation = taskParamsSchema.safeParse(req.params);
-      if (!paramsValidation.success) {
-        res.status(400).json({
-          error: 'Invalid task ID',
-        });
-        return;
-      }
-
-      const { id } = paramsValidation.data;
+      const id = req.validatedTaskId!;
       const task = await tasksService.getTaskById(id);
 
       if (!task) {
@@ -62,39 +38,14 @@ export class TasksController {
 
   async createTask(req: Request, res: Response): Promise<void> {
     try {
-      const validation = createTaskSchema.safeParse(req.body);
-      if (!validation.success) {
-        const firstError = validation.error.errors[0];
-        let errorMessage = firstError?.message || 'Validation failed';
-        if (errorMessage === 'Required') {
-          errorMessage = 'Title is required and must be a non-empty string';
-        } else if (errorMessage.includes('Invalid enum value')) {
-          if (firstError?.path?.includes('status')) {
-            errorMessage = 'Invalid status value';
-          } else if (firstError?.path?.includes('priority')) {
-            errorMessage = 'Invalid priority value';
-          }
-        }
-        res.status(400).json({
-          error: errorMessage,
-        });
-        return;
-      }
-
-      const data = validation.data;
-
-      if (data.assigneeId) {
-        const user = await User.findByPk(data.assigneeId);
-        if (!user) {
-          res.status(400).json({ error: 'Assignee not found' });
-          return;
-        }
-      }
-
-      const task = await tasksService.createTask(data);
+      const task = await tasksService.createTask(req.body);
       res.status(201).json(task);
       return;
     } catch (error) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({ error: error.message });
+        return;
+      }
       console.error('Error creating task:', error);
       res.status(500).json({ error: 'Internal server error' });
       return;
@@ -103,44 +54,8 @@ export class TasksController {
 
   async updateTask(req: Request, res: Response): Promise<void> {
     try {
-      const paramsValidation = taskParamsSchema.safeParse(req.params);
-      if (!paramsValidation.success) {
-        res.status(400).json({
-          error: 'Invalid task ID',
-        });
-        return;
-      }
-
-      const { id } = paramsValidation.data;
-
-      const validation = updateTaskSchema.safeParse(req.body);
-      if (!validation.success) {
-        const firstError = validation.error.errors[0];
-        let errorMessage = firstError?.message || 'Validation failed';
-        if (errorMessage.includes('Invalid enum value')) {
-          if (firstError?.path?.includes('status')) {
-            errorMessage = 'Invalid status value';
-          } else if (firstError?.path?.includes('priority')) {
-            errorMessage = 'Invalid priority value';
-          }
-        }
-        res.status(400).json({
-          error: errorMessage,
-        });
-        return;
-      }
-
-      const data = validation.data;
-
-      if (data.assigneeId !== undefined && data.assigneeId !== null) {
-        const user = await User.findByPk(data.assigneeId);
-        if (!user) {
-          res.status(400).json({ error: 'Assignee not found' });
-          return;
-        }
-      }
-
-      const task = await tasksService.updateTask(id, data);
+      const id = req.validatedTaskId!;
+      const task = await tasksService.updateTask(id, req.body);
 
       if (!task) {
         res.status(404).json({ error: 'Task not found' });
@@ -150,6 +65,10 @@ export class TasksController {
       res.json(task);
       return;
     } catch (error) {
+      if (error instanceof AppError) {
+        res.status(error.statusCode).json({ error: error.message });
+        return;
+      }
       console.error('Error updating task:', error);
       res.status(500).json({ error: 'Internal server error' });
       return;
@@ -158,15 +77,7 @@ export class TasksController {
 
   async deleteTask(req: Request, res: Response): Promise<void> {
     try {
-      const paramsValidation = taskParamsSchema.safeParse(req.params);
-      if (!paramsValidation.success) {
-        res.status(400).json({
-          error: 'Invalid task ID',
-        });
-        return;
-      }
-
-      const { id } = paramsValidation.data;
+      const id = req.validatedTaskId!;
       const deleted = await tasksService.deleteTask(id);
 
       if (!deleted) {

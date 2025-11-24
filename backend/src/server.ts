@@ -21,18 +21,13 @@ function registerProcessHandlers() {
     process.exit(0);
   };
 
-  // Prevent process from exiting on uncaught exception
   process.on('uncaughtException', (error) => {
     console.error('[fatal] uncaught exception:', error);
-    // Log the error but don't exit - keep server running
-    // In production, you might want to restart gracefully
   });
 
-  // Handle unhandled promise rejections
   process.on('unhandledRejection', (reason, promise) => {
     console.error('[fatal] unhandled rejection at:', promise);
     console.error('[fatal] reason:', reason);
-    // Don't exit, just log - let Express error handler deal with it
   });
 
   process.once('SIGINT', () => logAndExit('SIGINT'));
@@ -132,7 +127,6 @@ async function initializeDatabase() {
   }
 }
 
-// Log all incoming requests for debugging
 app.use((req, _res, next) => {
   console.log(`[server] ${req.method} ${req.path}`);
   next();
@@ -142,24 +136,24 @@ app.use('/', tasksRouter);
 app.use('/api', tasksRouter);
 app.use('/api/auth', authRouter);
 
-// 404 handler
 app.use((_req: express.Request, res: express.Response) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Error handling middleware (must be last)
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error('Unhandled error:', err);
   
-  // If response was already sent, delegate to default error handler
   if (res.headersSent) {
     return _next(err);
   }
   
-  res.status(err.status || 500).json({
+  const status = (err as { status?: number })?.status || 500;
+  const message = err instanceof Error ? err.message : 'Internal server error';
+  
+  res.status(status).json({
     error: process.env.NODE_ENV === 'production' 
       ? 'Internal server error' 
-      : err.message || 'Internal server error'
+      : message
   });
 });
 
@@ -171,7 +165,6 @@ async function startServer() {
       console.log(`Server is running on port ${PORT}`);
     });
 
-    // Handle server errors
     server.on('error', (error: NodeJS.ErrnoException) => {
       if (error.syscall !== 'listen') {
         throw error;

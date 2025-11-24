@@ -53,42 +53,7 @@ export const createTaskSchema = z.object({
   assigneeId: z.number().int().positive().optional().nullable(),
 });
 
-export const updateTaskSchema = z.object({
-  title: z
-    .string()
-    .min(1, 'Title must be a non-empty string')
-    .trim()
-    .refine((val) => val.length > 0, {
-      message: 'Title must be a non-empty string',
-    })
-    .optional(),
-  description: z.string().optional().nullable(),
-  type: taskTypeSchema.optional().nullable(),
-  status: taskStatusSchema.optional(),
-  priority: taskPrioritySchema.optional(),
-  deadline: z
-    .union([z.string(), z.date()])
-    .optional()
-    .nullable()
-    .transform((date) => {
-      if (!date || (typeof date === 'string' && date.trim() === '')) {
-        return null;
-      }
-      return date instanceof Date ? date : new Date(date);
-    })
-    .refine(
-      (date) => {
-        if (!date) return true;
-        const deadlineDate = date instanceof Date ? date : new Date(date);
-        if (isNaN(deadlineDate.getTime())) return false;
-        const now = new Date();
-        now.setHours(0, 0, 0, 0);
-        return deadlineDate >= now;
-      },
-      { message: 'Deadline cannot be in the past' }
-    ),
-  assigneeId: z.number().int().positive().optional().nullable(),
-});
+export const updateTaskSchema = createTaskSchema.partial();
 
 export const taskParamsSchema = z.object({
   id: z.string().regex(/^\d+$/).transform(Number),
