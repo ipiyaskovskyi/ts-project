@@ -26,7 +26,7 @@ export const getAllTasks = async (
 };
 
 export const getTaskById = async (
-  req: Request<{ id: string }>,
+  _req: Request<{ id: string }>,
   res: Response,
   next: NextFunction,
 ) => {
@@ -67,7 +67,7 @@ export const updateTask = async (
 };
 
 export const deleteTask = async (
-  req: Request<{ id: string }>,
+  _req: Request<{ id: string }>,
   res: Response,
   next: NextFunction,
 ) => {

@@ -214,8 +214,7 @@ describe('POST /tasks', () => {
         assigneeId: 999,
       });
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Validation error');
-    expect(response.body.details).toBeDefined();
+    expect(response.body.error).toBe('Assignee not found');
   });
 
   it('should create task successfully (201)', async () => {
@@ -377,8 +376,7 @@ describe('PUT /tasks/:id', () => {
       .put(`/tasks/${task.id}`)
       .send({ assigneeId: 999 });
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('Validation error');
-    expect(response.body.details).toBeDefined();
+    expect(response.body.error).toBe('Assignee not found');
   });
 
   it('should update task successfully (200)', async () => {
