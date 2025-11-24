@@ -31,7 +31,7 @@ export const taskSchema = z.object({
       },
       {
         message: "Deadline cannot be in the past",
-      },
+      }
     ),
 });
 

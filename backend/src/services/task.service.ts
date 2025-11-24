@@ -87,7 +87,10 @@ class TaskService {
 
       return task;
     } catch (error) {
-      if (error instanceof Error && error.name === "SequelizeForeignKeyConstraintError") {
+      if (
+        error instanceof Error &&
+        error.name === "SequelizeForeignKeyConstraintError"
+      ) {
         throw new AppError("Assignee not found", 400);
       }
       throw error;
@@ -139,7 +142,10 @@ class TaskService {
 
       return task;
     } catch (error) {
-      if (error instanceof Error && error.name === "SequelizeForeignKeyConstraintError") {
+      if (
+        error instanceof Error &&
+        error.name === "SequelizeForeignKeyConstraintError"
+      ) {
         throw new AppError("Assignee not found", 400);
       }
       throw error;

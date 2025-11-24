@@ -28,7 +28,7 @@ export const createTaskSchema = z.object({
         },
         {
           message: "Deadline must be a valid future date",
-        },
+        }
       ),
       z.null(),
       z.undefined(),
@@ -46,7 +46,7 @@ export const createTaskSchema = z.object({
           },
           {
             message: "AssigneeId must be a positive integer",
-          },
+          }
         )
         .transform((val) => Number(val)),
       z.null(),
@@ -55,12 +55,12 @@ export const createTaskSchema = z.object({
     .optional(),
 });
 
-export const updateTaskSchema = createTaskSchema.partial().strict().refine(
-  (data) => !("id" in data) && !("createdAt" in data),
-  {
+export const updateTaskSchema = createTaskSchema
+  .partial()
+  .strict()
+  .refine((data) => !("id" in data) && !("createdAt" in data), {
     message: "Fields id and createdAt cannot be updated",
-  }
-);
+  });
 
 export const queryFiltersSchema = z.object({
   createdAt: z
@@ -76,7 +76,7 @@ export const queryFiltersSchema = z.object({
       },
       {
         message: "createdAt must be a valid date",
-      },
+      }
     ),
   status: taskStatusEnum.optional(),
   priority: taskPriorityEnum.optional(),
@@ -121,4 +121,3 @@ export const validateQuery = (schema: z.ZodSchema) => {
     }
   };
 };
-

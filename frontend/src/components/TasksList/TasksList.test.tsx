@@ -62,7 +62,7 @@ describe("TasksList", () => {
     const onRetry = vi.fn();
 
     render(
-      <TasksList tasks={[]} error="Something went wrong" onRetry={onRetry} />,
+      <TasksList tasks={[]} error="Something went wrong" onRetry={onRetry} />
     );
 
     expect(screen.getByRole("alert")).toHaveTextContent("Something went wrong");

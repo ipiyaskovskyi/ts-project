@@ -28,7 +28,7 @@ describe("TaskForm", () => {
     const titleInput = screen.getByLabelText(/title/i);
     await user.type(titleInput, "ab");
     const minError = await screen.findByText(
-      "Title must be at least 3 characters long",
+      "Title must be at least 3 characters long"
     );
     expect(minError).toBeInTheDocument();
 
@@ -44,7 +44,9 @@ describe("TaskForm", () => {
     await user.clear(deadlineInput);
     await user.type(deadlineInput, formatted);
 
-    const deadlineError = await screen.findByText("Deadline cannot be in the past");
+    const deadlineError = await screen.findByText(
+      "Deadline cannot be in the past"
+    );
     expect(deadlineError).toBeInTheDocument();
   });
 });

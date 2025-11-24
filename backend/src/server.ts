@@ -30,7 +30,7 @@ app.use(
     err: Error | AppError,
     _req: Request,
     res: Response,
-    _next: express.NextFunction,
+    _next: express.NextFunction
   ) => {
     if (process.env.NODE_ENV !== "test") {
       console.error("Error:", err);
@@ -40,7 +40,7 @@ app.use(
     } else {
       res.status(500).json({ error: "Internal server error" });
     }
-  },
+  }
 );
 
 app.use((_req: Request, res: Response) => {

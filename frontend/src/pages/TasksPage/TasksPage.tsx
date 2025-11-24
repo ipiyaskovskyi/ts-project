@@ -44,7 +44,7 @@ export function TasksPage() {
         setIsSubmitting(false);
       }
     },
-    [loadTasks],
+    [loadTasks]
   );
 
   return (

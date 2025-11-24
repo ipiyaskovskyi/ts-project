@@ -14,7 +14,7 @@ export const getAllTasks = async (
     TaskFilters
   >,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const filters = (res.locals.validatedQuery as TaskFilters) || req.query;
@@ -28,7 +28,7 @@ export const getAllTasks = async (
 export const getTaskById = async (
   _req: Request<{ id: string }>,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const numericId = res.locals.validatedId as number;
@@ -42,7 +42,7 @@ export const getTaskById = async (
 export const createTask = async (
   req: Request<Record<string, never>, Record<string, never>, CreateTaskInput>,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const task = await taskService.create(req.body);
@@ -55,7 +55,7 @@ export const createTask = async (
 export const updateTask = async (
   req: Request<{ id: string }, Record<string, never>, UpdateTaskInput>,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const numericId = res.locals.validatedId as number;
@@ -69,7 +69,7 @@ export const updateTask = async (
 export const deleteTask = async (
   _req: Request<{ id: string }>,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const numericId = res.locals.validatedId as number;

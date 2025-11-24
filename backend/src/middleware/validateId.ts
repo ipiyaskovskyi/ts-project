@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 export const validateId = (
   req: Request<{ id: string }>,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   const { id } = req.params;
   const numericId = Number(id);
@@ -15,4 +15,3 @@ export const validateId = (
   res.locals.validatedId = numericId;
   next();
 };
-

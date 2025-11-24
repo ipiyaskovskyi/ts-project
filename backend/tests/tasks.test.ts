@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import request from "supertest";
-import { app } from "../src/server";
-import { sequelize, Task, User } from "../src/models/index";
+import { app } from "../src/server.js";
+import { sequelize, Task, User } from "../src/models/index.js";
 
 beforeAll(async () => {
   try {
@@ -165,7 +165,7 @@ describe("POST /api/tasks", () => {
         expect.objectContaining({
           path: ["title"],
         }),
-      ]),
+      ])
     );
   });
 
@@ -181,7 +181,7 @@ describe("POST /api/tasks", () => {
         expect.objectContaining({
           path: ["title"],
         }),
-      ]),
+      ])
     );
   });
 
@@ -201,7 +201,7 @@ describe("POST /api/tasks", () => {
           path: ["deadline"],
           message: "Deadline must be a valid future date",
         }),
-      ]),
+      ])
     );
   });
 
@@ -217,7 +217,7 @@ describe("POST /api/tasks", () => {
         expect.objectContaining({
           path: ["status"],
         }),
-      ]),
+      ])
     );
   });
 
@@ -233,7 +233,7 @@ describe("POST /api/tasks", () => {
         expect.objectContaining({
           path: ["priority"],
         }),
-      ]),
+      ])
     );
   });
 
@@ -342,7 +342,7 @@ describe("PUT /api/tasks/:id", () => {
         expect.objectContaining({
           path: ["title"],
         }),
-      ]),
+      ])
     );
   });
 
@@ -363,7 +363,7 @@ describe("PUT /api/tasks/:id", () => {
         expect.objectContaining({
           path: ["status"],
         }),
-      ]),
+      ])
     );
   });
 
@@ -384,7 +384,7 @@ describe("PUT /api/tasks/:id", () => {
         expect.objectContaining({
           path: ["priority"],
         }),
-      ]),
+      ])
     );
   });
 
@@ -409,7 +409,7 @@ describe("PUT /api/tasks/:id", () => {
           path: ["deadline"],
           message: "Deadline must be a valid future date",
         }),
-      ]),
+      ])
     );
   });
 
