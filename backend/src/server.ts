@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
   app.use(morgan('combined'));
 }
 
@@ -131,7 +131,9 @@ async function initializeDatabase() {
 }
 
 app.use((req, _res, next) => {
-  console.log(`[server] ${req.method} ${req.path}`);
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(`[server] ${req.method} ${req.path}`);
+  }
   next();
 });
 
